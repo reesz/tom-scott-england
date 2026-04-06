@@ -6,6 +6,7 @@ import { fitProjectionToFeatures } from '#/lib/projection'
 import { WebGLBackground } from '#/components/Map/WebGLBackground'
 import { CountySVG } from '#/components/Map/CountySVG'
 import { CountyLabels } from '#/components/Map/CountyLabels'
+import { MapContainer } from '#/components/Map/MapContainer'
 
 export const Route = createFileRoute('/')({ component: MapPage })
 
@@ -36,7 +37,7 @@ function MapPage() {
   const { projection, pathGenerator } = fitProjectionToFeatures(width, height, geoData)
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden">
+    <MapContainer>
       <WebGLBackground />
       <CountySVG
         geoData={geoData}
@@ -54,14 +55,6 @@ function MapPage() {
         width={width}
         height={height}
       />
-
-      {selectedId && (
-        <div className="absolute bottom-4 left-4 z-10 rounded-xl bg-white/80 px-4 py-2 shadow-lg backdrop-blur">
-          <p className="text-sm font-semibold">
-            Selected: {counties.find(c => c.id === selectedId)?.name ?? selectedId}
-          </p>
-        </div>
-      )}
-    </div>
+    </MapContainer>
   )
 }
