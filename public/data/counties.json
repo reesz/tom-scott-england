@@ -1,0 +1,55 @@
+{
+  "counties": [
+    {
+      "id": "rutland",
+      "name": "Rutland",
+      "population": 41043,
+      "areaSqKm": 382,
+      "countyTown": { "name": "Oakham", "coords": { "lat": 52.6703, "lng": -0.7290 } },
+      "description": "England's smallest ceremonial county, known for Rutland Water and its charming market towns.",
+      "coatOfArms": "/assets/arms/rutland.svg",
+      "landmarks": [
+        { "name": "Rutland Water", "coords": { "lat": 52.658, "lng": -0.720 } },
+        { "name": "Oakham Castle", "coords": { "lat": 52.671, "lng": -0.731 } }
+      ],
+      "youtubeId": "placeholder",
+      "nebulaUrl": "https://nebula.tv/videos/placeholder",
+      "status": "released",
+      "releaseDate": "2026-03-20"
+    },
+    {
+      "id": "greater-london",
+      "name": "Greater London",
+      "population": 8799800,
+      "areaSqKm": 1572,
+      "countyTown": { "name": "City of London", "coords": { "lat": 51.5155, "lng": -0.0922 } },
+      "description": "The capital county, home to the UK's seat of government and a global cultural hub.",
+      "coatOfArms": "/assets/arms/greater-london.svg",
+      "landmarks": [
+        { "name": "Tower of London", "coords": { "lat": 51.5081, "lng": -0.0759 } },
+        { "name": "Buckingham Palace", "coords": { "lat": 51.5014, "lng": -0.1419 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": "2026-06-01"
+    },
+    {
+      "id": "cornwall",
+      "name": "Cornwall",
+      "population": 573100,
+      "areaSqKm": 3563,
+      "countyTown": { "name": "Truro", "coords": { "lat": 50.2632, "lng": -5.0510 } },
+      "description": "England's southwestern tip, famous for dramatic coastlines, tin mining heritage, and Cornish pasties.",
+      "coatOfArms": "/assets/arms/cornwall.svg",
+      "landmarks": [
+        { "name": "St Michael's Mount", "coords": { "lat": 50.1171, "lng": -5.4773 } },
+        { "name": "Eden Project", "coords": { "lat": 50.3601, "lng": -4.7447 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": "2026-05-15"
+    }
+  ]
+}
