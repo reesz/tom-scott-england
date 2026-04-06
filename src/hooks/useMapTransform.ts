@@ -1,5 +1,8 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, createContext, useContext } from 'react'
 import { useGesture } from '@use-gesture/react'
+
+export const MapScaleContext = createContext<number>(1)
+export const useMapScale = () => useContext(MapScaleContext)
 
 export interface MapTransform {
   x: number
@@ -64,6 +67,14 @@ export function useMapTransform() {
     setTransform({ x: 0, y: 0, scale: 1 })
   }, [])
 
+  const flyTo = useCallback((targetX: number, targetY: number, targetScale?: number) => {
+    setTransform((prev) => ({
+      x: -targetX + window.innerWidth / 2,
+      y: -targetY + window.innerHeight / 2,
+      scale: targetScale ?? Math.max(2, prev.scale),
+    }))
+  }, [])
+
   const transformStyle = `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`
 
   return {
@@ -74,5 +85,6 @@ export function useMapTransform() {
     zoomIn,
     zoomOut,
     resetView,
+    flyTo,
   }
 }

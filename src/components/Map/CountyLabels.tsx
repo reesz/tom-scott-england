@@ -1,15 +1,21 @@
 import { geoCentroid } from 'd3-geo'
 import type { GeoProjection } from 'd3-geo'
 import type { CountyFeatureCollection } from '#/hooks/useGeoData'
+import { useMapScale } from '#/hooks/useMapTransform'
 
 interface CountyLabelsProps {
   geoData: CountyFeatureCollection
   projection: GeoProjection
   width: number
   height: number
+  scale?: number
 }
 
 export function CountyLabels({ geoData, projection, width, height }: CountyLabelsProps) {
+  const scale = useMapScale()
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  if (isMobile && scale < 1.5) return null
+
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}

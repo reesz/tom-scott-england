@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { geoCentroid } from 'd3-geo'
 import { useCountyData } from '#/hooks/useCountyData'
 import { useGeoData } from '#/hooks/useGeoData'
 import { fitProjectionToFeatures } from '#/lib/projection'
@@ -34,22 +35,34 @@ export function MapView({ selectedId, onSelectCounty, onCloseDetail }: MapViewPr
     [geoData, selectedId]
   )
 
+  const width = 800
+  const height = 900
+
+  const { projection, pathGenerator } = useMemo(() => {
+    if (!geoData) return { projection: null, pathGenerator: null }
+    return fitProjectionToFeatures(width, height, geoData)
+  }, [geoData])
+
+  const flyToTarget = useMemo(() => {
+    if (!selectedFeature || !projection) return null
+    const centroid = geoCentroid(selectedFeature)
+    const projected = projection(centroid)
+    if (!projected) return null
+    return { x: projected[0], y: projected[1] }
+  }, [selectedFeature, projection])
+
   if (countiesLoading || geoLoading) {
     return <div className="flex h-dvh items-center justify-center"><p>Loading...</p></div>
   }
 
-  if (!geoData) {
+  if (!geoData || !projection || !pathGenerator) {
     return <div className="flex h-dvh items-center justify-center"><p>No geo data</p></div>
   }
-
-  const width = 800
-  const height = 900
-  const { projection, pathGenerator } = fitProjectionToFeatures(width, height, geoData)
 
   return (
     <>
       <Header />
-      <MapContainer>
+      <MapContainer flyToTarget={flyToTarget}>
         <WebGLBackground />
         <CountySVG
           geoData={geoData}

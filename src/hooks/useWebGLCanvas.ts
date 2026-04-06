@@ -33,6 +33,7 @@ function createProgram(gl: WebGLRenderingContext, vertSrc: string, fragSrc: stri
 export function useWebGLCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const animFrameRef = useRef<number>(0)
   const startTimeRef = useRef<number>(Date.now())
+  const mouseRef = useRef({ x: 0.5, y: 0.5 })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -55,6 +56,14 @@ export function useWebGLCanvas(canvasRef: React.RefObject<HTMLCanvasElement | nu
     resize()
     window.addEventListener('resize', resize)
 
+    const handleMouse = (e: MouseEvent) => {
+      mouseRef.current = {
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      }
+    }
+    window.addEventListener('mousemove', handleMouse)
+
     const buffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW)
@@ -63,6 +72,7 @@ export function useWebGLCanvas(canvasRef: React.RefObject<HTMLCanvasElement | nu
     const aPosition = gl.getAttribLocation(program, 'a_position')
     const uResolution = gl.getUniformLocation(program, 'u_resolution')
     const uTime = gl.getUniformLocation(program, 'u_time')
+    const uMouse = gl.getUniformLocation(program, 'u_mouse')
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -76,6 +86,11 @@ export function useWebGLCanvas(canvasRef: React.RefObject<HTMLCanvasElement | nu
 
       gl.uniform2f(uResolution, canvas.width, canvas.height)
       gl.uniform1f(uTime, elapsed)
+      if (prefersReducedMotion) {
+        gl.uniform2f(uMouse, 0.5, 0.5)
+      } else {
+        gl.uniform2f(uMouse, mouseRef.current.x, mouseRef.current.y)
+      }
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
@@ -87,6 +102,7 @@ export function useWebGLCanvas(canvasRef: React.RefObject<HTMLCanvasElement | nu
     return () => {
       cancelAnimationFrame(animFrameRef.current)
       window.removeEventListener('resize', resize)
+      window.removeEventListener('mousemove', handleMouse)
     }
   }, [canvasRef])
 }

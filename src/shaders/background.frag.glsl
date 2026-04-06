@@ -3,6 +3,7 @@ precision mediump float;
 varying vec2 v_uv;
 uniform vec2 u_resolution;
 uniform float u_time;
+uniform vec2 u_mouse;
 
 // --- Noise functions ---
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -113,7 +114,8 @@ vec3 paperTexture(vec2 uv) {
 }
 
 void main() {
-  vec2 uv = v_uv;
+  vec2 parallaxOffset = (u_mouse - 0.5) * 0.01;
+  vec2 uv = v_uv + parallaxOffset;
 
   // Paper base
   vec3 paper = paperTexture(uv);
