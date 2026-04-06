@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
+import { useState } from 'react'
 import { useCountyData } from '#/hooks/useCountyData'
 import { useGeoData } from '#/hooks/useGeoData'
 import { fitProjectionToFeatures } from '#/lib/projection'
@@ -8,22 +9,30 @@ import { CountySVG } from '#/components/Map/CountySVG'
 import { CountyLabels } from '#/components/Map/CountyLabels'
 import { MapContainer } from '#/components/Map/MapContainer'
 import { Header } from '#/components/Layout/Header'
+import { DetailPanel } from '#/components/Detail/DetailPanel'
+import { BottomSheet } from '#/components/Detail/BottomSheet'
+import { CountyDetail } from '#/components/Detail/CountyDetail'
 
-export const Route = createFileRoute('/')({ component: MapPage })
+export const Route = createFileRoute('/county/$id')({ component: CountyPage })
 
-function MapPage() {
+function CountyPage() {
+  const { id } = Route.useParams()
   const navigate = useNavigate()
   const { counties, loading: countiesLoading } = useCountyData()
   const { geoData, loading: geoLoading } = useGeoData()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-  const handleSelect = useCallback((id: string) => {
-    navigate({ to: '/county/$id', params: { id } })
-  }, [navigate])
+  const handleSelect = useCallback((newId: string) => {
+    if (newId === id) {
+      navigate({ to: '/' })
+    } else {
+      navigate({ to: '/county/$id', params: { id: newId } })
+    }
+  }, [id, navigate])
 
-  const handleHover = useCallback((id: string | null) => {
-    setHoveredId(id)
-  }, [])
+  const handleClose = useCallback(() => {
+    navigate({ to: '/' })
+  }, [navigate])
 
   if (countiesLoading || geoLoading) {
     return <div className="flex h-dvh items-center justify-center"><p>Loading...</p></div>
@@ -37,6 +46,9 @@ function MapPage() {
   const height = 900
   const { projection, pathGenerator } = fitProjectionToFeatures(width, height, geoData)
 
+  const county = counties.find((c) => c.id === id)
+  const feature = geoData.features.find((f) => f.properties.id === id)
+
   return (
     <>
       <Header />
@@ -46,19 +58,22 @@ function MapPage() {
           geoData={geoData}
           pathGenerator={pathGenerator}
           counties={counties}
-          selectedId={null}
+          selectedId={id}
           onSelect={handleSelect}
-          onHover={handleHover}
+          onHover={setHoveredId}
           width={width}
           height={height}
         />
-        <CountyLabels
-          geoData={geoData}
-          projection={projection}
-          width={width}
-          height={height}
-        />
+        <CountyLabels geoData={geoData} projection={projection} width={width} height={height} />
       </MapContainer>
+
+      <DetailPanel isOpen={!!county} onClose={handleClose}>
+        {county && feature && <CountyDetail county={county} feature={feature} />}
+      </DetailPanel>
+
+      <BottomSheet isOpen={!!county} onClose={handleClose}>
+        {county && feature && <CountyDetail county={county} feature={feature} />}
+      </BottomSheet>
     </>
   )
 }
