@@ -1,14 +1,27 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState, useCallback } from 'react'
 import { useCountyData } from '#/hooks/useCountyData'
 import { useGeoData } from '#/hooks/useGeoData'
 import { fitProjectionToFeatures } from '#/lib/projection'
 import { WebGLBackground } from '#/components/Map/WebGLBackground'
+import { CountySVG } from '#/components/Map/CountySVG'
+import { CountyLabels } from '#/components/Map/CountyLabels'
 
 export const Route = createFileRoute('/')({ component: MapPage })
 
 function MapPage() {
   const { counties, loading: countiesLoading } = useCountyData()
   const { geoData, loading: geoLoading } = useGeoData()
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId((prev) => (prev === id ? null : id))
+  }, [])
+
+  const handleHover = useCallback((id: string | null) => {
+    setHoveredId(id)
+  }, [])
 
   if (countiesLoading || geoLoading) {
     return <div className="flex h-dvh items-center justify-center"><p>Loading...</p></div>
@@ -20,33 +33,35 @@ function MapPage() {
 
   const width = 800
   const height = 900
-  const { pathGenerator } = fitProjectionToFeatures(width, height, geoData)
+  const { projection, pathGenerator } = fitProjectionToFeatures(width, height, geoData)
 
   return (
     <div className="relative h-dvh w-full overflow-hidden">
       <WebGLBackground />
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="absolute inset-0 h-full w-full"
-        style={{ zIndex: 1 }}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {geoData.features.map((feature) => {
-          const d = pathGenerator(feature)
-          if (!d) return null
-          const county = counties.find((c) => c.id === feature.properties.id)
-          const isReleased = county?.status === 'released'
-          return (
-            <path
-              key={feature.properties.id}
-              d={d}
-              fill={isReleased ? 'rgba(79, 140, 100, 0.25)' : 'rgba(150, 150, 140, 0.15)'}
-              stroke="rgba(90, 74, 58, 0.6)"
-              strokeWidth={0.5}
-            />
-          )
-        })}
-      </svg>
+      <CountySVG
+        geoData={geoData}
+        pathGenerator={pathGenerator}
+        counties={counties}
+        selectedId={selectedId}
+        onSelect={handleSelect}
+        onHover={handleHover}
+        width={width}
+        height={height}
+      />
+      <CountyLabels
+        geoData={geoData}
+        projection={projection}
+        width={width}
+        height={height}
+      />
+
+      {selectedId && (
+        <div className="absolute bottom-4 left-4 z-10 rounded-xl bg-white/80 px-4 py-2 shadow-lg backdrop-blur">
+          <p className="text-sm font-semibold">
+            Selected: {counties.find(c => c.id === selectedId)?.name ?? selectedId}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
