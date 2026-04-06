@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCountyData } from '#/hooks/useCountyData'
 import { useGeoData } from '#/hooks/useGeoData'
 import { fitProjectionToFeatures } from '#/lib/projection'
+import { WebGLBackground } from '#/components/Map/WebGLBackground'
 
 export const Route = createFileRoute('/')({ component: MapPage })
 
@@ -22,8 +23,14 @@ function MapPage() {
   const { pathGenerator } = fitProjectionToFeatures(width, height, geoData)
 
   return (
-    <div className="flex h-dvh items-center justify-center bg-[#f4e8c1]">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-full max-h-dvh w-auto">
+    <div className="relative h-dvh w-full overflow-hidden">
+      <WebGLBackground />
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="absolute inset-0 h-full w-full"
+        style={{ zIndex: 1 }}
+        preserveAspectRatio="xMidYMid meet"
+      >
         {geoData.features.map((feature) => {
           const d = pathGenerator(feature)
           if (!d) return null
@@ -33,8 +40,8 @@ function MapPage() {
             <path
               key={feature.properties.id}
               d={d}
-              fill={isReleased ? 'rgba(79, 140, 100, 0.3)' : 'rgba(150, 150, 150, 0.2)'}
-              stroke="#5a4a3a"
+              fill={isReleased ? 'rgba(79, 140, 100, 0.25)' : 'rgba(150, 150, 140, 0.15)'}
+              stroke="rgba(90, 74, 58, 0.6)"
               strokeWidth={0.5}
             />
           )
