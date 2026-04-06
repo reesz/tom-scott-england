@@ -7,6 +7,7 @@ import { WebGLBackground } from '#/components/Map/WebGLBackground'
 import { CountySVG } from '#/components/Map/CountySVG'
 import { CountyLabels } from '#/components/Map/CountyLabels'
 import { MapContainer } from '#/components/Map/MapContainer'
+import { Header } from '#/components/Layout/Header'
 
 export const Route = createFileRoute('/')({ component: MapPage })
 
@@ -37,6 +38,8 @@ function MapPage() {
   const { projection, pathGenerator } = fitProjectionToFeatures(width, height, geoData)
 
   return (
+    <>
+    <Header />
     <MapContainer>
       <WebGLBackground />
       <CountySVG
@@ -56,5 +59,6 @@ function MapPage() {
         height={height}
       />
     </MapContainer>
+    </>
   )
 }
