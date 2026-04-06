@@ -77,6 +77,25 @@ float hillshade(vec2 uv) {
   return max(dot(normal, lightDir), 0.0);
 }
 
+// Water / coastline effect
+vec3 waterColor(vec2 uv, float time) {
+  vec3 deepWater = vec3(0.22, 0.35, 0.38);
+  vec3 lightWater = vec3(0.32, 0.48, 0.50);
+
+  float wave1 = snoise(uv * 15.0 + vec2(time * 0.08, time * 0.05)) * 0.5 + 0.5;
+  float wave2 = snoise(uv * 25.0 - vec2(time * 0.12, time * 0.03)) * 0.5 + 0.5;
+  float waves = wave1 * 0.6 + wave2 * 0.4;
+
+  vec3 water = mix(deepWater, lightWater, waves * 0.3);
+
+  // Stippled wave lines (old map style)
+  float stipple = sin((uv.x + uv.y * 0.5) * 80.0 + time * 2.0) * 0.5 + 0.5;
+  stipple = smoothstep(0.4, 0.6, stipple);
+  water += stipple * 0.03;
+
+  return water;
+}
+
 // --- Paper ---
 vec3 paperTexture(vec2 uv) {
   vec3 base = vec3(0.957, 0.910, 0.757);
@@ -105,11 +124,19 @@ void main() {
   float shade = hillshade(uv);
   terrain *= mix(0.7, 1.1, shade);
 
-  // Blend terrain onto paper
-  vec3 color = mix(paper, terrain, 0.55);
+  // Land/terrain blended with paper
+  vec3 land = mix(paper, terrain, 0.55);
+  land += fbm(uv * 60.0, 3) * 0.02;
 
-  // Add paper grain on top
-  color += fbm(uv * 60.0, 3) * 0.02;
+  // Water
+  vec3 water = waterColor(uv, u_time);
+  water = mix(paper * 0.7, water, 0.6);
+
+  // Water at edges, land in center
+  float edgeDist = min(min(uv.x, 1.0 - uv.x), min(uv.y, 1.0 - uv.y));
+  float waterMask = smoothstep(0.15, 0.05, edgeDist);
+
+  vec3 color = mix(land, water, waterMask);
 
   // Subtle time-based warmth
   color += vec3(0.008, 0.004, 0.0) * sin(u_time * 0.3);
