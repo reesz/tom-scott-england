@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useCountyData } from '#/hooks/useCountyData'
 import { useGeoData } from '#/hooks/useGeoData'
 import { fitProjectionToFeatures } from '#/lib/projection'
@@ -8,6 +8,8 @@ import { CountySVG } from '#/components/Map/CountySVG'
 import { CountyLabels } from '#/components/Map/CountyLabels'
 import { MapContainer } from '#/components/Map/MapContainer'
 import { Header } from '#/components/Layout/Header'
+import { DetailPanel } from '#/components/Detail/DetailPanel'
+import { CountyDetail } from '#/components/Detail/CountyDetail'
 
 export const Route = createFileRoute('/')({ component: MapPage })
 
@@ -24,6 +26,20 @@ function MapPage() {
   const handleHover = useCallback((id: string | null) => {
     setHoveredId(id)
   }, [])
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedId(null)
+  }, [])
+
+  const selectedCounty = useMemo(
+    () => counties.find((c) => c.id === selectedId),
+    [counties, selectedId]
+  )
+
+  const selectedFeature = useMemo(
+    () => geoData?.features.find((f) => f.properties.id === selectedId),
+    [geoData, selectedId]
+  )
 
   if (countiesLoading || geoLoading) {
     return <div className="flex h-dvh items-center justify-center"><p>Loading...</p></div>
@@ -59,6 +75,11 @@ function MapPage() {
         height={height}
       />
     </MapContainer>
+    <DetailPanel isOpen={!!selectedId} onClose={handleCloseDetail}>
+      {selectedCounty && selectedFeature && (
+        <CountyDetail county={selectedCounty} feature={selectedFeature} />
+      )}
+    </DetailPanel>
     </>
   )
 }
