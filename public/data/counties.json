@@ -50,6 +50,798 @@
       "nebulaUrl": null,
       "status": "upcoming",
       "releaseDate": "2026-05-15"
+    },
+    {
+      "id": "greater-manchester",
+      "name": "Greater Manchester",
+      "population": 2850000,
+      "areaSqKm": 1276,
+      "countyTown": { "name": "Manchester", "coords": { "lat": 53.4808, "lng": -2.2426 } },
+      "description": "A major metropolitan county in northwest England, renowned for its industrial heritage, football clubs, and vibrant music scene.",
+      "coatOfArms": "/assets/arms/greater-manchester.svg",
+      "landmarks": [
+        { "name": "Manchester Town Hall", "coords": { "lat": 53.4791, "lng": -2.2440 } },
+        { "name": "Old Trafford", "coords": { "lat": 53.4631, "lng": -2.2913 } },
+        { "name": "Museum of Science and Industry", "coords": { "lat": 53.4776, "lng": -2.2511 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "merseyside",
+      "name": "Merseyside",
+      "population": 1416800,
+      "areaSqKm": 645,
+      "countyTown": { "name": "Liverpool", "coords": { "lat": 53.4084, "lng": -2.9916 } },
+      "description": "A metropolitan county on the River Mersey estuary, famous worldwide as the birthplace of The Beatles and home to the historic Liverpool waterfront.",
+      "coatOfArms": "/assets/arms/merseyside.svg",
+      "landmarks": [
+        { "name": "Liverpool Cathedral", "coords": { "lat": 53.3999, "lng": -2.9765 } },
+        { "name": "Albert Dock", "coords": { "lat": 53.3996, "lng": -2.9971 } },
+        { "name": "The Cavern Club", "coords": { "lat": 53.4083, "lng": -2.9913 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "south-yorkshire",
+      "name": "South Yorkshire",
+      "population": 1402900,
+      "areaSqKm": 1552,
+      "countyTown": { "name": "Sheffield", "coords": { "lat": 53.3811, "lng": -1.4701 } },
+      "description": "A metropolitan county in northern England, historically the heart of Britain's steel industry and now a hub of culture and regeneration.",
+      "coatOfArms": "/assets/arms/south-yorkshire.svg",
+      "landmarks": [
+        { "name": "Sheffield Cathedral", "coords": { "lat": 53.3837, "lng": -1.4716 } },
+        { "name": "Kelham Island Museum", "coords": { "lat": 53.3921, "lng": -1.4739 } },
+        { "name": "Conisbrough Castle", "coords": { "lat": 53.4815, "lng": -1.2294 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "tyne-and-wear",
+      "name": "Tyne and Wear",
+      "population": 1140900,
+      "areaSqKm": 540,
+      "countyTown": { "name": "Newcastle upon Tyne", "coords": { "lat": 54.9783, "lng": -1.6178 } },
+      "description": "A metropolitan county straddling the River Tyne estuary, famed for its iconic bridges, Roman heritage, and proud northeastern identity.",
+      "coatOfArms": "/assets/arms/tyne-and-wear.svg",
+      "landmarks": [
+        { "name": "Tyne Bridge", "coords": { "lat": 54.9686, "lng": -1.6083 } },
+        { "name": "Angel of the North", "coords": { "lat": 54.9143, "lng": -1.5890 } },
+        { "name": "Sage Gateshead", "coords": { "lat": 54.9682, "lng": -1.6038 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "west-midlands",
+      "name": "West Midlands",
+      "population": 2916400,
+      "areaSqKm": 902,
+      "countyTown": { "name": "Birmingham", "coords": { "lat": 52.4862, "lng": -1.8904 } },
+      "description": "England's most populous metropolitan county outside London, centred on Birmingham and known for its industrial legacy, canals, and diverse communities.",
+      "coatOfArms": "/assets/arms/west-midlands.svg",
+      "landmarks": [
+        { "name": "Birmingham Cathedral", "coords": { "lat": 52.4830, "lng": -1.8987 } },
+        { "name": "Cadbury World", "coords": { "lat": 52.4351, "lng": -1.9285 } },
+        { "name": "Coventry Cathedral", "coords": { "lat": 52.4082, "lng": -1.5105 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "west-yorkshire",
+      "name": "West Yorkshire",
+      "population": 2320000,
+      "areaSqKm": 2029,
+      "countyTown": { "name": "Leeds", "coords": { "lat": 53.8008, "lng": -1.5491 } },
+      "description": "A metropolitan county in northern England encompassing Leeds, Bradford, and the Pennine moorlands made famous by the Brontë sisters.",
+      "coatOfArms": "/assets/arms/west-yorkshire.svg",
+      "landmarks": [
+        { "name": "Leeds Town Hall", "coords": { "lat": 53.8001, "lng": -1.5487 } },
+        { "name": "Haworth and Brontë Parsonage", "coords": { "lat": 53.8307, "lng": -1.9574 } },
+        { "name": "Royal Armouries Museum", "coords": { "lat": 53.7944, "lng": -1.5388 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "north-yorkshire",
+      "name": "North Yorkshire",
+      "population": 615700,
+      "areaSqKm": 8654,
+      "countyTown": { "name": "Northallerton", "coords": { "lat": 54.3368, "lng": -1.4289 } },
+      "description": "England's largest ceremonial county by area, encompassing the Yorkshire Dales, North York Moors, and the historic city of York.",
+      "coatOfArms": "/assets/arms/north-yorkshire.svg",
+      "landmarks": [
+        { "name": "York Minster", "coords": { "lat": 53.9623, "lng": -1.0819 } },
+        { "name": "Fountains Abbey", "coords": { "lat": 54.1154, "lng": -1.5758 } },
+        { "name": "Whitby Abbey", "coords": { "lat": 54.4896, "lng": -0.6099 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "durham",
+      "name": "Durham",
+      "population": 530700,
+      "areaSqKm": 2232,
+      "countyTown": { "name": "Durham", "coords": { "lat": 54.7753, "lng": -1.5849 } },
+      "description": "A county in northeast England dominated by the magnificent Durham Cathedral, a UNESCO World Heritage Site, and a landscape shaped by coal mining.",
+      "coatOfArms": "/assets/arms/durham.svg",
+      "landmarks": [
+        { "name": "Durham Cathedral", "coords": { "lat": 54.7736, "lng": -1.5762 } },
+        { "name": "Durham Castle", "coords": { "lat": 54.7741, "lng": -1.5773 } },
+        { "name": "Beamish Museum", "coords": { "lat": 54.8880, "lng": -1.6590 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "cheshire",
+      "name": "Cheshire",
+      "population": 1063100,
+      "areaSqKm": 2344,
+      "countyTown": { "name": "Chester", "coords": { "lat": 53.1905, "lng": -2.8918 } },
+      "description": "A county in northwest England known for its black-and-white timbered buildings, the walled city of Chester, and the salt wiches of the Cheshire Plain.",
+      "coatOfArms": "/assets/arms/cheshire.svg",
+      "landmarks": [
+        { "name": "Chester Walls", "coords": { "lat": 53.1930, "lng": -2.8916 } },
+        { "name": "Beeston Castle", "coords": { "lat": 53.1168, "lng": -2.7234 } },
+        { "name": "Jodrell Bank Observatory", "coords": { "lat": 53.2364, "lng": -2.3074 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "lancashire",
+      "name": "Lancashire",
+      "population": 1492500,
+      "areaSqKm": 2903,
+      "countyTown": { "name": "Preston", "coords": { "lat": 53.7632, "lng": -2.7031 } },
+      "description": "A county in northwest England with a rich industrial history, the Forest of Bowland, and a proud rivalry with Yorkshire that stretches back centuries.",
+      "coatOfArms": "/assets/arms/lancashire.svg",
+      "landmarks": [
+        { "name": "Lancaster Castle", "coords": { "lat": 54.0473, "lng": -2.8020 } },
+        { "name": "Blackpool Tower", "coords": { "lat": 53.8162, "lng": -3.0561 } },
+        { "name": "Pendle Hill", "coords": { "lat": 53.8563, "lng": -2.2834 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "east-riding-of-yorkshire",
+      "name": "East Riding of Yorkshire",
+      "population": 601700,
+      "areaSqKm": 2479,
+      "countyTown": { "name": "Beverley", "coords": { "lat": 53.8440, "lng": -0.4290 } },
+      "description": "A largely rural county east of the Pennines, featuring the Yorkshire Wolds, the Humber estuary, and the coastal town of Bridlington.",
+      "coatOfArms": "/assets/arms/east-riding-of-yorkshire.svg",
+      "landmarks": [
+        { "name": "Beverley Minster", "coords": { "lat": 53.8440, "lng": -0.4264 } },
+        { "name": "Burton Constable Hall", "coords": { "lat": 53.8259, "lng": -0.2441 } },
+        { "name": "Spurn Point", "coords": { "lat": 53.5780, "lng": 0.1134 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "lincolnshire",
+      "name": "Lincolnshire",
+      "population": 773600,
+      "areaSqKm": 5921,
+      "countyTown": { "name": "Lincoln", "coords": { "lat": 53.2307, "lng": -0.5406 } },
+      "description": "A large county in the East Midlands, dominated by fenland agriculture and crowned by the hilltop city of Lincoln with its towering medieval cathedral.",
+      "coatOfArms": "/assets/arms/lincolnshire.svg",
+      "landmarks": [
+        { "name": "Lincoln Cathedral", "coords": { "lat": 53.2343, "lng": -0.5396 } },
+        { "name": "Lincoln Castle", "coords": { "lat": 53.2342, "lng": -0.5419 } },
+        { "name": "Burghley House", "coords": { "lat": 52.6507, "lng": -0.4788 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "derbyshire",
+      "name": "Derbyshire",
+      "population": 1076200,
+      "areaSqKm": 2625,
+      "countyTown": { "name": "Matlock", "coords": { "lat": 53.1393, "lng": -1.5598 } },
+      "description": "A county straddling the Peak District, England's first national park, with stately homes, spa towns, and a proud industrial heritage.",
+      "coatOfArms": "/assets/arms/derbyshire.svg",
+      "landmarks": [
+        { "name": "Chatsworth House", "coords": { "lat": 53.2278, "lng": -1.6106 } },
+        { "name": "Haddon Hall", "coords": { "lat": 53.2094, "lng": -1.6541 } },
+        { "name": "Mam Tor", "coords": { "lat": 53.3491, "lng": -1.8103 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "nottinghamshire",
+      "name": "Nottinghamshire",
+      "population": 838700,
+      "areaSqKm": 2085,
+      "countyTown": { "name": "Nottingham", "coords": { "lat": 52.9548, "lng": -1.1581 } },
+      "description": "The county of Robin Hood legend, featuring Sherwood Forest, a magnificent castle city, and the ancestral home of Lord Byron.",
+      "coatOfArms": "/assets/arms/nottinghamshire.svg",
+      "landmarks": [
+        { "name": "Nottingham Castle", "coords": { "lat": 52.9517, "lng": -1.1504 } },
+        { "name": "Sherwood Forest", "coords": { "lat": 53.2027, "lng": -1.0652 } },
+        { "name": "Newstead Abbey", "coords": { "lat": 53.0815, "lng": -1.1701 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "somerset",
+      "name": "Somerset",
+      "population": 570100,
+      "areaSqKm": 3451,
+      "countyTown": { "name": "Taunton", "coords": { "lat": 51.0153, "lng": -3.1017 } },
+      "description": "A rural county in southwest England encompassing the Somerset Levels, Exmoor, and the mystical town of Glastonbury.",
+      "coatOfArms": "/assets/arms/somerset.svg",
+      "landmarks": [
+        { "name": "Glastonbury Tor", "coords": { "lat": 51.1444, "lng": -2.6989 } },
+        { "name": "Wells Cathedral", "coords": { "lat": 51.2093, "lng": -2.6476 } },
+        { "name": "Cheddar Gorge", "coords": { "lat": 51.2843, "lng": -2.7757 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "bristol",
+      "name": "Bristol",
+      "population": 472800,
+      "areaSqKm": 110,
+      "countyTown": { "name": "Bristol", "coords": { "lat": 51.4545, "lng": -2.5879 } },
+      "description": "A unitary county city on the Avon, celebrated for its maritime history, the Clifton Suspension Bridge, and Brunel's engineering legacy.",
+      "coatOfArms": "/assets/arms/bristol.svg",
+      "landmarks": [
+        { "name": "Clifton Suspension Bridge", "coords": { "lat": 51.4549, "lng": -2.6278 } },
+        { "name": "SS Great Britain", "coords": { "lat": 51.4492, "lng": -2.6030 } },
+        { "name": "Bristol Cathedral", "coords": { "lat": 51.4538, "lng": -2.6022 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "gloucestershire",
+      "name": "Gloucestershire",
+      "population": 653000,
+      "areaSqKm": 2653,
+      "countyTown": { "name": "Gloucester", "coords": { "lat": 51.8642, "lng": -2.2380 } },
+      "description": "A county in the West Country featuring the Cotswolds, the Forest of Dean, and the cathedral city of Gloucester with its Roman and Norman heritage.",
+      "coatOfArms": "/assets/arms/gloucestershire.svg",
+      "landmarks": [
+        { "name": "Gloucester Cathedral", "coords": { "lat": 51.8656, "lng": -2.2476 } },
+        { "name": "Sudeley Castle", "coords": { "lat": 51.9533, "lng": -1.9002 } },
+        { "name": "Symonds Yat Rock", "coords": { "lat": 51.8435, "lng": -2.6456 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "devon",
+      "name": "Devon",
+      "population": 900000,
+      "areaSqKm": 6707,
+      "countyTown": { "name": "Exeter", "coords": { "lat": 50.7184, "lng": -3.5339 } },
+      "description": "A large county in southwest England with two coastlines, Dartmoor and Exmoor national parks, and a maritime heritage stretching back to Drake and Raleigh.",
+      "coatOfArms": "/assets/arms/devon.svg",
+      "landmarks": [
+        { "name": "Exeter Cathedral", "coords": { "lat": 50.7219, "lng": -3.5312 } },
+        { "name": "Dartmoor National Park", "coords": { "lat": 50.5799, "lng": -3.9162 } },
+        { "name": "Buckland Abbey", "coords": { "lat": 50.4917, "lng": -4.1001 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "dorset",
+      "name": "Dorset",
+      "population": 430800,
+      "areaSqKm": 2653,
+      "countyTown": { "name": "Dorchester", "coords": { "lat": 50.7154, "lng": -2.4383 } },
+      "description": "A county on England's south coast boasting the Jurassic Coast UNESCO World Heritage Site, Thomas Hardy's landscape, and the remarkable natural harbour of Poole.",
+      "coatOfArms": "/assets/arms/dorset.svg",
+      "landmarks": [
+        { "name": "Durdle Door", "coords": { "lat": 50.6212, "lng": -2.2770 } },
+        { "name": "Corfe Castle", "coords": { "lat": 50.6394, "lng": -2.0563 } },
+        { "name": "Maiden Castle", "coords": { "lat": 50.6952, "lng": -2.4696 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "cambridgeshire",
+      "name": "Cambridgeshire",
+      "population": 864900,
+      "areaSqKm": 3389,
+      "countyTown": { "name": "Cambridge", "coords": { "lat": 52.2053, "lng": 0.1218 } },
+      "description": "A county in the East of England home to one of the world's great universities, the flat fenlands, and the ancient market town of Ely.",
+      "coatOfArms": "/assets/arms/cambridgeshire.svg",
+      "landmarks": [
+        { "name": "King's College Chapel", "coords": { "lat": 52.2044, "lng": 0.1165 } },
+        { "name": "Ely Cathedral", "coords": { "lat": 52.3993, "lng": 0.2626 } },
+        { "name": "Wicken Fen", "coords": { "lat": 52.3013, "lng": 0.2956 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "bedfordshire",
+      "name": "Bedfordshire",
+      "population": 700900,
+      "areaSqKm": 1235,
+      "countyTown": { "name": "Bedford", "coords": { "lat": 52.1365, "lng": -0.4668 } },
+      "description": "A county in the East of England known for the Bedford Levels, Woburn Abbey, and as the setting for John Bunyan's Pilgrim's Progress.",
+      "coatOfArms": "/assets/arms/bedfordshire.svg",
+      "landmarks": [
+        { "name": "Woburn Abbey", "coords": { "lat": 51.9948, "lng": -0.6150 } },
+        { "name": "Dunstable Downs", "coords": { "lat": 51.8590, "lng": -0.5265 } },
+        { "name": "Wrest Park", "coords": { "lat": 52.0228, "lng": -0.4513 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "essex",
+      "name": "Essex",
+      "population": 1865700,
+      "areaSqKm": 3465,
+      "countyTown": { "name": "Chelmsford", "coords": { "lat": 51.7356, "lng": 0.4685 } },
+      "description": "A county northeast of London with a long Thames estuary coastline, ancient Colchester (Britain's oldest recorded town), and the rolling green of its rural interior.",
+      "coatOfArms": "/assets/arms/essex.svg",
+      "landmarks": [
+        { "name": "Colchester Castle", "coords": { "lat": 51.8893, "lng": 0.9015 } },
+        { "name": "Audley End House", "coords": { "lat": 52.0765, "lng": 0.2265 } },
+        { "name": "Mersea Island", "coords": { "lat": 51.7798, "lng": 0.9339 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "kent",
+      "name": "Kent",
+      "population": 1858200,
+      "areaSqKm": 3736,
+      "countyTown": { "name": "Maidstone", "coords": { "lat": 51.2720, "lng": 0.5290 } },
+      "description": "The Garden of England, a county in the southeast renowned for its hop gardens, white cliffs of Dover, and Canterbury Cathedral.",
+      "coatOfArms": "/assets/arms/kent.svg",
+      "landmarks": [
+        { "name": "Canterbury Cathedral", "coords": { "lat": 51.2800, "lng": 1.0827 } },
+        { "name": "Dover Castle", "coords": { "lat": 51.1279, "lng": 1.3213 } },
+        { "name": "Leeds Castle", "coords": { "lat": 51.2479, "lng": 0.6290 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "berkshire",
+      "name": "Berkshire",
+      "population": 935700,
+      "areaSqKm": 1262,
+      "countyTown": { "name": "Reading", "coords": { "lat": 51.4543, "lng": -0.9781 } },
+      "description": "A royal county west of London, home to Windsor Castle, the Ascot Racecourse, and the River Thames at its most picturesque.",
+      "coatOfArms": "/assets/arms/berkshire.svg",
+      "landmarks": [
+        { "name": "Windsor Castle", "coords": { "lat": 51.4839, "lng": -0.6044 } },
+        { "name": "Basildon Park", "coords": { "lat": 51.5046, "lng": -1.1652 } },
+        { "name": "Bletchley Park (nearby)", "coords": { "lat": 51.9977, "lng": -0.7406 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "east-sussex",
+      "name": "East Sussex",
+      "population": 571800,
+      "areaSqKm": 1725,
+      "countyTown": { "name": "Lewes", "coords": { "lat": 50.8742, "lng": 0.0086 } },
+      "description": "A county on England's southeast coast featuring the iconic white chalk cliffs of Beachy Head, the bohemian city of Brighton, and 1066 Battle of Hastings site.",
+      "coatOfArms": "/assets/arms/east-sussex.svg",
+      "landmarks": [
+        { "name": "Beachy Head", "coords": { "lat": 50.7370, "lng": 0.2453 } },
+        { "name": "Battle Abbey", "coords": { "lat": 50.9139, "lng": 0.4857 } },
+        { "name": "Brighton Royal Pavilion", "coords": { "lat": 50.8220, "lng": -0.1375 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "hampshire",
+      "name": "Hampshire",
+      "population": 1421300,
+      "areaSqKm": 3769,
+      "countyTown": { "name": "Winchester", "coords": { "lat": 51.0632, "lng": -1.3080 } },
+      "description": "A county on England's south coast with the ancient capital of Winchester, the New Forest national park, and a proud naval heritage at Portsmouth.",
+      "coatOfArms": "/assets/arms/hampshire.svg",
+      "landmarks": [
+        { "name": "Winchester Cathedral", "coords": { "lat": 51.0605, "lng": -1.3117 } },
+        { "name": "Portsmouth Historic Dockyard", "coords": { "lat": 50.7985, "lng": -1.1099 } },
+        { "name": "New Forest", "coords": { "lat": 50.8652, "lng": -1.5654 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "buckinghamshire",
+      "name": "Buckinghamshire",
+      "population": 820900,
+      "areaSqKm": 1565,
+      "countyTown": { "name": "Aylesbury", "coords": { "lat": 51.8143, "lng": -0.8088 } },
+      "description": "A county northwest of London featuring the Chiltern Hills, the prime ministerial retreat of Chequers, and the market town of Aylesbury.",
+      "coatOfArms": "/assets/arms/buckinghamshire.svg",
+      "landmarks": [
+        { "name": "Bletchley Park", "coords": { "lat": 51.9977, "lng": -0.7406 } },
+        { "name": "Waddesdon Manor", "coords": { "lat": 51.8473, "lng": -0.9230 } },
+        { "name": "Stowe Gardens", "coords": { "lat": 52.0468, "lng": -1.0174 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "cumbria",
+      "name": "Cumbria",
+      "population": 500800,
+      "areaSqKm": 6768,
+      "countyTown": { "name": "Carlisle", "coords": { "lat": 54.8951, "lng": -2.9382 } },
+      "description": "England's second largest county, encompassing the entire Lake District national park, Hadrian's Wall, and some of the most spectacular scenery in England.",
+      "coatOfArms": "/assets/arms/cumbria.svg",
+      "landmarks": [
+        { "name": "Scafell Pike", "coords": { "lat": 54.4542, "lng": -3.2113 } },
+        { "name": "Hadrian's Wall (Housesteads)", "coords": { "lat": 54.9926, "lng": -2.3335 } },
+        { "name": "Castlerigg Stone Circle", "coords": { "lat": 54.6026, "lng": -3.0975 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "hertfordshire",
+      "name": "Hertfordshire",
+      "population": 1198200,
+      "areaSqKm": 1643,
+      "countyTown": { "name": "Hertford", "coords": { "lat": 51.7970, "lng": -0.0794 } },
+      "description": "A county north of London known for the world's first garden cities, the ruins of the Roman city of Verulamium, and the birthplace of the world wide web.",
+      "coatOfArms": "/assets/arms/hertfordshire.svg",
+      "landmarks": [
+        { "name": "St Albans Cathedral", "coords": { "lat": 51.7487, "lng": -0.3429 } },
+        { "name": "Hatfield House", "coords": { "lat": 51.7622, "lng": -0.2205 } },
+        { "name": "Verulamium Park", "coords": { "lat": 51.7488, "lng": -0.3568 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "leicestershire",
+      "name": "Leicestershire",
+      "population": 722600,
+      "areaSqKm": 2084,
+      "countyTown": { "name": "Leicester", "coords": { "lat": 52.6369, "lng": -1.1398 } },
+      "description": "A county in the East Midlands famous for fox hunting, Stilton cheese, and the discovery of King Richard III beneath a Leicester car park.",
+      "coatOfArms": "/assets/arms/leicestershire.svg",
+      "landmarks": [
+        { "name": "Leicester Cathedral", "coords": { "lat": 52.6360, "lng": -1.1389 } },
+        { "name": "Bradgate Park", "coords": { "lat": 52.6929, "lng": -1.2334 } },
+        { "name": "Belvoir Castle", "coords": { "lat": 52.8793, "lng": -0.7916 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "norfolk",
+      "name": "Norfolk",
+      "population": 950200,
+      "areaSqKm": 5371,
+      "countyTown": { "name": "Norwich", "coords": { "lat": 52.6309, "lng": 1.2974 } },
+      "description": "A large, flat county in East Anglia famous for the Norfolk Broads, the Sandringham royal estate, and some of England's finest medieval churches.",
+      "coatOfArms": "/assets/arms/norfolk.svg",
+      "landmarks": [
+        { "name": "Norwich Cathedral", "coords": { "lat": 52.6319, "lng": 1.2994 } },
+        { "name": "Sandringham House", "coords": { "lat": 52.8346, "lng": 0.5082 } },
+        { "name": "Holkham Beach", "coords": { "lat": 52.9677, "lng": 0.8207 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "northamptonshire",
+      "name": "Northamptonshire",
+      "population": 791600,
+      "areaSqKm": 2364,
+      "countyTown": { "name": "Northampton", "coords": { "lat": 52.2405, "lng": -0.9027 } },
+      "description": "A landlocked county in the East Midlands, historically famous for shoemaking, with a wealth of stately homes and the source of the River Nene.",
+      "coatOfArms": "/assets/arms/northamptonshire.svg",
+      "landmarks": [
+        { "name": "Althorp House", "coords": { "lat": 52.2887, "lng": -1.0736 } },
+        { "name": "Boughton House", "coords": { "lat": 52.4367, "lng": -0.7230 } },
+        { "name": "Rockingham Castle", "coords": { "lat": 52.4836, "lng": -0.7283 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "oxfordshire",
+      "name": "Oxfordshire",
+      "population": 705300,
+      "areaSqKm": 2605,
+      "countyTown": { "name": "Oxford", "coords": { "lat": 51.7520, "lng": -1.2577 } },
+      "description": "Home to one of the world's oldest universities, the Cotswold Hills, and the birthplace of both Winston Churchill and J.R.R. Tolkien's Middle-earth imagination.",
+      "coatOfArms": "/assets/arms/oxfordshire.svg",
+      "landmarks": [
+        { "name": "Bodleian Library", "coords": { "lat": 51.7540, "lng": -1.2542 } },
+        { "name": "Blenheim Palace", "coords": { "lat": 51.8414, "lng": -1.3620 } },
+        { "name": "Rollright Stones", "coords": { "lat": 51.9762, "lng": -1.5716 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "staffordshire",
+      "name": "Staffordshire",
+      "population": 884700,
+      "areaSqKm": 2713,
+      "countyTown": { "name": "Stafford", "coords": { "lat": 52.8066, "lng": -2.1174 } },
+      "description": "A county in the West Midlands region known for the Potteries of Stoke-on-Trent, the dramatic Cannock Chase, and the brewing town of Burton upon Trent.",
+      "coatOfArms": "/assets/arms/staffordshire.svg",
+      "landmarks": [
+        { "name": "Lichfield Cathedral", "coords": { "lat": 52.6840, "lng": -1.8274 } },
+        { "name": "Alton Towers", "coords": { "lat": 52.9883, "lng": -1.8905 } },
+        { "name": "Cannock Chase", "coords": { "lat": 52.7229, "lng": -1.9680 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "suffolk",
+      "name": "Suffolk",
+      "population": 767400,
+      "areaSqKm": 3801,
+      "countyTown": { "name": "Ipswich", "coords": { "lat": 52.0567, "lng": 1.1482 } },
+      "description": "A county in East Anglia celebrated for its wool-trade heritage, Constable Country along the Stour valley, and the shingle beaches of Aldeburgh and Orford Ness.",
+      "coatOfArms": "/assets/arms/suffolk.svg",
+      "landmarks": [
+        { "name": "Lavenham Guildhall", "coords": { "lat": 52.1044, "lng": 0.8082 } },
+        { "name": "Sutton Hoo", "coords": { "lat": 52.0864, "lng": 1.3358 } },
+        { "name": "Orford Castle", "coords": { "lat": 52.0922, "lng": 1.5360 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "surrey",
+      "name": "Surrey",
+      "population": 1208700,
+      "areaSqKm": 1663,
+      "countyTown": { "name": "Guildford", "coords": { "lat": 51.2362, "lng": -0.5704 } },
+      "description": "A county southwest of London featuring the North Downs, the Devil's Punchbowl, and some of the most affluent commuter towns in England.",
+      "coatOfArms": "/assets/arms/surrey.svg",
+      "landmarks": [
+        { "name": "Guildford Castle", "coords": { "lat": 51.2345, "lng": -0.5744 } },
+        { "name": "Box Hill", "coords": { "lat": 51.2616, "lng": -0.3169 } },
+        { "name": "Runnymede (Magna Carta Memorial)", "coords": { "lat": 51.4397, "lng": -0.5648 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "warwickshire",
+      "name": "Warwickshire",
+      "population": 594800,
+      "areaSqKm": 1975,
+      "countyTown": { "name": "Warwick", "coords": { "lat": 52.2817, "lng": -1.5856 } },
+      "description": "Shakespeare's county, home to Stratford-upon-Avon, the formidable Warwick Castle, and the historic Forest of Arden.",
+      "coatOfArms": "/assets/arms/warwickshire.svg",
+      "landmarks": [
+        { "name": "Warwick Castle", "coords": { "lat": 52.2793, "lng": -1.5872 } },
+        { "name": "Shakespeare's Birthplace, Stratford", "coords": { "lat": 52.1930, "lng": -1.7080 } },
+        { "name": "Kenilworth Castle", "coords": { "lat": 52.3447, "lng": -1.5759 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "west-sussex",
+      "name": "West Sussex",
+      "population": 883400,
+      "areaSqKm": 1991,
+      "countyTown": { "name": "Chichester", "coords": { "lat": 50.8366, "lng": -0.7792 } },
+      "description": "A county on England's south coast featuring the South Downs national park, Chichester Harbour, and the historic cathedral city of Chichester.",
+      "coatOfArms": "/assets/arms/west-sussex.svg",
+      "landmarks": [
+        { "name": "Chichester Cathedral", "coords": { "lat": 50.8368, "lng": -0.7806 } },
+        { "name": "Arundel Castle", "coords": { "lat": 50.8545, "lng": -0.5532 } },
+        { "name": "Goodwood House", "coords": { "lat": 50.8890, "lng": -0.7450 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "worcestershire",
+      "name": "Worcestershire",
+      "population": 600600,
+      "areaSqKm": 1741,
+      "countyTown": { "name": "Worcester", "coords": { "lat": 52.1920, "lng": -2.2216 } },
+      "description": "A county in the West Midlands region famous for its sauce, its cathedral overlooking the River Severn, and the Malvern Hills beloved by Elgar.",
+      "coatOfArms": "/assets/arms/worcestershire.svg",
+      "landmarks": [
+        { "name": "Worcester Cathedral", "coords": { "lat": 52.1890, "lng": -2.2224 } },
+        { "name": "Malvern Hills", "coords": { "lat": 52.1046, "lng": -2.3298 } },
+        { "name": "Witley Court", "coords": { "lat": 52.2726, "lng": -2.2878 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "shropshire",
+      "name": "Shropshire",
+      "population": 321800,
+      "areaSqKm": 3197,
+      "countyTown": { "name": "Shrewsbury", "coords": { "lat": 52.7082, "lng": -2.7540 } },
+      "description": "A rural border county in the West Midlands region, the birthplace of Charles Darwin, featuring the Ironbridge Gorge where the Industrial Revolution began.",
+      "coatOfArms": "/assets/arms/shropshire.svg",
+      "landmarks": [
+        { "name": "Ironbridge", "coords": { "lat": 52.6277, "lng": -2.4853 } },
+        { "name": "Shrewsbury Castle", "coords": { "lat": 52.7094, "lng": -2.7505 } },
+        { "name": "Stokesay Castle", "coords": { "lat": 52.4547, "lng": -2.8288 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "wiltshire",
+      "name": "Wiltshire",
+      "population": 501100,
+      "areaSqKm": 3485,
+      "countyTown": { "name": "Trowbridge", "coords": { "lat": 51.3201, "lng": -2.2082 } },
+      "description": "A county on Salisbury Plain in southern England, home to Stonehenge and Avebury, two of the world's most important prehistoric monuments.",
+      "coatOfArms": "/assets/arms/wiltshire.svg",
+      "landmarks": [
+        { "name": "Stonehenge", "coords": { "lat": 51.1789, "lng": -1.8262 } },
+        { "name": "Avebury Stone Circle", "coords": { "lat": 51.4288, "lng": -1.8543 } },
+        { "name": "Longleat House", "coords": { "lat": 51.1909, "lng": -2.2839 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "isle-of-wight",
+      "name": "Isle of Wight",
+      "population": 140994,
+      "areaSqKm": 380,
+      "countyTown": { "name": "Newport", "coords": { "lat": 50.6938, "lng": -1.2959 } },
+      "description": "England's largest island county, separated from Hampshire by the Solent, famous for its dinosaur fossils, the Needles chalk stacks, and Queen Victoria's Osborne House.",
+      "coatOfArms": "/assets/arms/isle-of-wight.svg",
+      "landmarks": [
+        { "name": "The Needles", "coords": { "lat": 50.6644, "lng": -1.5905 } },
+        { "name": "Osborne House", "coords": { "lat": 50.7374, "lng": -1.2696 } },
+        { "name": "Carisbrooke Castle", "coords": { "lat": 50.6845, "lng": -1.3081 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "northumberland",
+      "name": "Northumberland",
+      "population": 320600,
+      "areaSqKm": 5013,
+      "countyTown": { "name": "Morpeth", "coords": { "lat": 55.1685, "lng": -1.6882 } },
+      "description": "England's northernmost county, with the darkest skies in England, sweeping moorlands, the Farne Islands, and a coastline of dramatic castles.",
+      "coatOfArms": "/assets/arms/northumberland.svg",
+      "landmarks": [
+        { "name": "Bamburgh Castle", "coords": { "lat": 55.6087, "lng": -1.7102 } },
+        { "name": "Hadrian's Wall (Housesteads Fort)", "coords": { "lat": 54.9926, "lng": -2.3335 } },
+        { "name": "Lindisfarne Priory", "coords": { "lat": 55.6682, "lng": -1.8018 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
+    },
+    {
+      "id": "herefordshire",
+      "name": "Herefordshire",
+      "population": 193300,
+      "areaSqKm": 2180,
+      "countyTown": { "name": "Hereford", "coords": { "lat": 52.0567, "lng": -2.7158 } },
+      "description": "A rural border county in the West Midlands region famous for its Hereford cattle, cider orchards, and the medieval Mappa Mundi held in Hereford Cathedral.",
+      "coatOfArms": "/assets/arms/herefordshire.svg",
+      "landmarks": [
+        { "name": "Hereford Cathedral (Mappa Mundi)", "coords": { "lat": 52.0538, "lng": -2.7147 } },
+        { "name": "Hay-on-Wye", "coords": { "lat": 52.0731, "lng": -3.1280 } },
+        { "name": "Goodrich Castle", "coords": { "lat": 51.8722, "lng": -2.6290 } }
+      ],
+      "youtubeId": null,
+      "nebulaUrl": null,
+      "status": "upcoming",
+      "releaseDate": null
     }
   ]
 }
