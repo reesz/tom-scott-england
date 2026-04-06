@@ -1,64 +1,43 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import { MapView } from '#/components/Map/MapView'
+import { MobileListView } from '#/components/Layout/MobileListView'
 import { useCountyData } from '#/hooks/useCountyData'
-import { useGeoData } from '#/hooks/useGeoData'
-import { fitProjectionToFeatures } from '#/lib/projection'
-import { WebGLBackground } from '#/components/Map/WebGLBackground'
-import { CountySVG } from '#/components/Map/CountySVG'
-import { CountyLabels } from '#/components/Map/CountyLabels'
-import { MapContainer } from '#/components/Map/MapContainer'
-import { Header } from '#/components/Layout/Header'
 
 export const Route = createFileRoute('/')({ component: MapPage })
 
 function MapPage() {
   const navigate = useNavigate()
-  const { counties, loading: countiesLoading } = useCountyData()
-  const { geoData, loading: geoLoading } = useGeoData()
-  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const { counties } = useCountyData()
+  const [listOpen, setListOpen] = useState(false)
 
   const handleSelect = useCallback((id: string) => {
     navigate({ to: '/county/$id', params: { id } })
   }, [navigate])
 
-  const handleHover = useCallback((id: string | null) => {
-    setHoveredId(id)
-  }, [])
-
-  if (countiesLoading || geoLoading) {
-    return <div className="flex h-dvh items-center justify-center"><p>Loading...</p></div>
-  }
-
-  if (!geoData) {
-    return <div className="flex h-dvh items-center justify-center"><p>No geo data</p></div>
-  }
-
-  const width = 800
-  const height = 900
-  const { projection, pathGenerator } = fitProjectionToFeatures(width, height, geoData)
-
   return (
     <>
-      <Header />
-      <MapContainer>
-        <WebGLBackground />
-        <CountySVG
-          geoData={geoData}
-          pathGenerator={pathGenerator}
-          counties={counties}
-          selectedId={null}
-          onSelect={handleSelect}
-          onHover={handleHover}
-          width={width}
-          height={height}
-        />
-        <CountyLabels
-          geoData={geoData}
-          projection={projection}
-          width={width}
-          height={height}
-        />
-      </MapContainer>
+      <MapView selectedId={null} onSelectCounty={handleSelect} onCloseDetail={() => {}} />
+
+      <button
+        onClick={() => setListOpen(true)}
+        className="fixed bottom-4 left-4 z-10 flex h-11 items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-4 shadow-md backdrop-blur-lg md:hidden"
+        aria-label="Show county list"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="2" y1="4" x2="14" y2="4" />
+          <line x1="2" y1="8" x2="14" y2="8" />
+          <line x1="2" y1="12" x2="10" y2="12" />
+        </svg>
+        <span className="text-sm font-semibold text-[var(--sea-ink)]">Counties</span>
+      </button>
+
+      <MobileListView
+        counties={counties}
+        isOpen={listOpen}
+        onClose={() => setListOpen(false)}
+        onSelectCounty={handleSelect}
+      />
     </>
   )
 }

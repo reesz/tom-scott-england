@@ -21,6 +21,8 @@ export function CountyPath({
   isSelected,
 }: CountyPathProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const prefersReducedMotion = typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const isReleased = county?.status === 'released'
   const isUpcoming = county?.status === 'upcoming'
 
@@ -51,18 +53,14 @@ export function CountyPath({
 
   // Hand-drawn dash animation on hover
   const pathLength = 5000
-  const dashProps = isHovered
+  const dashProps = isHovered && !prefersReducedMotion
     ? {
         strokeDasharray: pathLength,
         strokeDashoffset: 0,
-        style: {
-          transition: 'stroke-dashoffset 0.8s ease-in-out, fill 0.2s ease, stroke 0.2s ease',
-        },
+        style: { transition: 'stroke-dashoffset 0.8s ease-in-out, fill 0.2s ease, stroke 0.2s ease' },
       }
     : {
-        style: {
-          transition: 'fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease',
-        },
+        style: { transition: prefersReducedMotion ? 'none' : 'fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease' },
       }
 
   return (
