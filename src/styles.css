@@ -265,12 +265,12 @@ pre code {
 
 .atlas-panel,
 .island-shell {
-  border: 1px solid var(--line);
+  border: 1px solid var(--gold-line);
   background: linear-gradient(165deg, var(--surface-strong), var(--surface));
   box-shadow:
     0 1px 0 var(--inset-glint) inset,
     0 22px 44px var(--shadow-soft),
-    0 6px 18px var(--shadow-strong);
+    0 6px 18px var(--shadow-soft);
   backdrop-filter: blur(4px);
 }
 
@@ -279,7 +279,7 @@ pre code {
   box-shadow:
     0 1px 0 var(--inset-glint) inset,
     0 18px 34px var(--shadow-soft),
-    0 4px 14px var(--shadow-strong);
+    0 4px 14px var(--shadow-soft);
 }
 
 .feature-card:hover {
@@ -319,7 +319,7 @@ a {
   height: 2px;
   transform: scaleX(0);
   transform-origin: left;
-  background: linear-gradient(90deg, var(--gold), #c4a040);
+  background: linear-gradient(90deg, var(--gold), rgba(180, 140, 60, 0.5));
   transition: transform 170ms ease;
 }
 
