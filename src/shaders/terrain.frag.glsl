@@ -4,6 +4,7 @@ varying vec2 v_uv;
 
 uniform sampler2D u_dem;
 uniform sampler2D u_mask;
+uniform sampler2D u_countyMask;
 uniform vec2 u_mouse;
 uniform float u_time;
 uniform vec2 u_resolution;
@@ -49,12 +50,12 @@ float snoise(vec2 v) {
 // --- Hypsometric color scale ---
 vec3 terrainColor(float h) {
   // Saturated palette — rich greens through warm ochre to cool peaks
-  vec3 c0 = vec3(0.18, 0.42, 0.22);  // 0m: deep forest green
-  vec3 c1 = vec3(0.28, 0.55, 0.24);  // 50m: rich mid green
-  vec3 c2 = vec3(0.50, 0.68, 0.26);  // 150m: vivid yellow-green
-  vec3 c3 = vec3(0.72, 0.58, 0.22);  // 300m: warm ochre
-  vec3 c4 = vec3(0.55, 0.35, 0.18);  // 500m: deep brown
-  vec3 c5 = vec3(0.42, 0.25, 0.32);  // 800m+: dark purple-brown
+  vec3 c0 = vec3(0.14, 0.48, 0.18);  // 0m: deep forest green
+  vec3 c1 = vec3(0.24, 0.62, 0.20);  // 50m: rich mid green
+  vec3 c2 = vec3(0.50, 0.74, 0.20);  // 150m: vivid yellow-green
+  vec3 c3 = vec3(0.78, 0.58, 0.16);  // 300m: warm ochre
+  vec3 c4 = vec3(0.60, 0.32, 0.14);  // 500m: deep brown
+  vec3 c5 = vec3(0.48, 0.22, 0.30);  // 800m+: dark purple-brown
   vec3 c6 = vec3(0.72, 0.70, 0.68);  // Peaks: cool grey
 
   // Elevation stops normalized to 0-1 (max ~1345m)
@@ -116,15 +117,15 @@ void main() {
   // Apply land mask: alpha = 0 over water
   float alpha = smoothstep(0.1, 0.5, mask);
 
+  // Fog-of-war: darken terrain outside English counties
+  float countyMask = texture2D(u_countyMask, v_uv).r;
+  float fog = mix(0.55, 1.0, countyMask);
+  color *= fog;
+
   // Fade out near edges of valid DEM range to prevent edge artifacts
   float edgeFade = smoothstep(0.0, 0.02, demUV.x) * smoothstep(1.0, 0.98, demUV.x)
                  * smoothstep(0.0, 0.02, demUV.y) * smoothstep(1.0, 0.98, demUV.y);
   alpha *= edgeFade;
-
-  // Fade out terrain below ~50.5N latitude to hide northern France
-  // DEM covers 49-61N; in Mercator UV ~0.11 corresponds to 50.5N
-  float franceFade = smoothstep(0.10, 0.14, demUV.y);
-  alpha *= franceFade;
 
   gl_FragColor = vec4(color, alpha);
 }

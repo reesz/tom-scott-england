@@ -14,9 +14,6 @@ import {
   Vector4,
   ShapeGeometry,
   EdgesGeometry,
-  LineSegments,
-  LineBasicMaterial,
-  MeshStandardMaterial,
   MeshBasicMaterial,
   Group,
   Color,
@@ -24,6 +21,13 @@ import {
   SpriteMaterial,
   Raycaster,
   type Texture,
+  CanvasTexture,
+  CustomBlending,
+  MultiplyBlending,
+  ZeroFactor,
+  DstColorFactor,
+  AddEquation,
+  OneFactor,
 } from 'three'
 import {
   EffectComposer,
@@ -46,6 +50,9 @@ import { geoCentroid } from 'd3-geo'
 import { geoToShapes } from '#/lib/geoToShape'
 import { createLabelSprite } from '#/lib/createLabelSprite'
 import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js'
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import type { County } from '#/types/county'
 
 // --- Constants ---
@@ -233,6 +240,62 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     waterMesh.renderOrder = 0
     scene.add(waterMesh)
 
+    // --- Generate county mask texture for fog-of-war ---
+    const MASK_RES = 1024
+    const maskCanvas = document.createElement('canvas')
+    maskCanvas.width = MASK_RES
+    maskCanvas.height = MASK_RES
+    const maskCtx = maskCanvas.getContext('2d')!
+    maskCtx.fillStyle = '#000'
+    maskCtx.fillRect(0, 0, MASK_RES, MASK_RES)
+    maskCtx.fillStyle = '#fff'
+
+    for (const feature of geoData.features) {
+      const coords =
+        feature.geometry.type === 'Polygon'
+          ? [feature.geometry.coordinates]
+          : feature.geometry.coordinates
+
+      for (const polygon of coords) {
+        const outer = polygon[0]
+        maskCtx.beginPath()
+        for (let i = 0; i < outer.length; i++) {
+          const [wx, wy] = geoToWorld(outer[i][0], outer[i][1])
+          const u = (wx - DEM_WORLD_MIN[0]) / DEM_WIDTH
+          const v = 1 - (wy - DEM_WORLD_MIN[1]) / DEM_HEIGHT
+          const px = u * MASK_RES
+          const py = v * MASK_RES
+          if (i === 0) maskCtx.moveTo(px, py)
+          else maskCtx.lineTo(px, py)
+        }
+        maskCtx.closePath()
+        maskCtx.fill()
+
+        // Cut out holes
+        for (let h = 1; h < polygon.length; h++) {
+          const hole = polygon[h]
+          maskCtx.globalCompositeOperation = 'destination-out'
+          maskCtx.beginPath()
+          for (let i = 0; i < hole.length; i++) {
+            const [wx, wy] = geoToWorld(hole[i][0], hole[i][1])
+            const u = (wx - DEM_WORLD_MIN[0]) / DEM_WIDTH
+            const v = 1 - (wy - DEM_WORLD_MIN[1]) / DEM_HEIGHT
+            const px = u * MASK_RES
+            const py = v * MASK_RES
+            if (i === 0) maskCtx.moveTo(px, py)
+            else maskCtx.lineTo(px, py)
+          }
+          maskCtx.closePath()
+          maskCtx.fill()
+          maskCtx.globalCompositeOperation = 'source-over'
+        }
+      }
+    }
+
+    const countyMaskTex = new CanvasTexture(maskCanvas)
+    countyMaskTex.minFilter = LinearFilter
+    countyMaskTex.magFilter = LinearFilter
+
     // --- Terrain quad: sized exactly to DEM world bounds ---
     const terrainGeo = new PlaneGeometry(DEM_WIDTH, DEM_HEIGHT)
     const terrainMaterial = new ShaderMaterial({
@@ -241,6 +304,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       uniforms: {
         u_dem: { value: null },
         u_mask: { value: null },
+        u_countyMask: { value: countyMaskTex },
         u_mouse: { value: new Vector2(0.5, 0.5) },
         u_time: { value: 0 },
         u_resolution: {
@@ -259,28 +323,6 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     terrainMesh.renderOrder = 1
     scene.add(terrainMesh)
 
-    // --- Background Landmasses ---
-    const landmassGroup = new Group()
-    landmassGroup.renderOrder = 2
-    if (islandsData) {
-      for (const feature of islandsData.features) {
-        const shapes = geoToShapes(feature.geometry)
-        for (const shape of shapes) {
-          const geom = new ShapeGeometry(shape)
-          const mat = new MeshBasicMaterial({
-            color: new Color(180 / 255, 170 / 255, 155 / 255),
-            transparent: true,
-            opacity: 0.3,
-            depthWrite: false,
-          })
-          const mesh = new Mesh(geom, mat)
-          mesh.renderOrder = 2
-          landmassGroup.add(mesh)
-        }
-      }
-    }
-    scene.add(landmassGroup)
-
     // --- County Fills ---
     const countyFillGroup = new Group()
     countyFillGroup.renderOrder = 3
@@ -291,13 +333,16 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
       for (const shape of shapes) {
         const geom = new ShapeGeometry(shape)
-        const mat = new MeshStandardMaterial({
-          color: new Color(0, 0, 0),
+        const mat = new MeshBasicMaterial({
+          color: new Color(1, 1, 1),
           transparent: true,
-          opacity: 0,
           depthWrite: false,
-          emissive: new Color(0, 0, 0),
-          emissiveIntensity: 0,
+          blending: CustomBlending,
+          blendEquation: AddEquation,
+          blendSrc: DstColorFactor,   // rgb: result = src * dst_color + dst * 0 = src * dst
+          blendDst: ZeroFactor,
+          blendSrcAlpha: ZeroFactor,  // alpha: leave dst alpha unchanged
+          blendDstAlpha: OneFactor,
         })
         const mesh = new Mesh(geom, mat)
         mesh.renderOrder = 3
@@ -307,36 +352,84 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     }
     scene.add(countyFillGroup)
 
-    // --- County Borders ---
+    // --- County Borders (thick lines via LineSegments2) ---
     const countyBorderGroup = new Group()
     countyBorderGroup.renderOrder = 4
 
+    const borderLineMaterials: LineMaterial[] = []
+
     for (const feature of geoData.features) {
       const countyId = feature.properties.id
-      const county = counties.find((c) => c.id === countyId)
-      const isReleased = county?.status === 'released'
       const shapes = geoToShapes(feature.geometry)
 
       for (const shape of shapes) {
         const fillGeom = new ShapeGeometry(shape)
         const edges = new EdgesGeometry(fillGeom)
-        const borderColor = isReleased
-          ? new Color(180 / 255, 150 / 255, 60 / 255)
-          : new Color(60 / 255, 50 / 255, 40 / 255)
-        const lineMat = new LineBasicMaterial({
-          color: borderColor,
+        const posAttr = edges.getAttribute('position')
+        const positions: number[] = []
+        for (let i = 0; i < posAttr.count; i++) {
+          positions.push(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i))
+        }
+        const lineGeom = new LineSegmentsGeometry()
+        lineGeom.setPositions(positions)
+        const lineMat = new LineMaterial({
+          color: 0x5c4a3a,
+          linewidth: 2,
           transparent: true,
-          opacity: isReleased ? 0.6 : 0.4,
+          opacity: 1.0,
           depthWrite: false,
+          blending: MultiplyBlending,
+          resolution: new Vector2(canvas.clientWidth, canvas.clientHeight),
         })
-        const lineSegments = new LineSegments(edges, lineMat)
+        borderLineMaterials.push(lineMat)
+        const lineSegments = new LineSegments2(lineGeom, lineMat)
         lineSegments.renderOrder = 4
         lineSegments.userData = { countyId }
         countyBorderGroup.add(lineSegments)
         fillGeom.dispose()
+        edges.dispose()
       }
     }
     scene.add(countyBorderGroup)
+
+    // --- Selection highlight borders (dark green, shown on selected county) ---
+    const highlightBorderGroup = new Group()
+    highlightBorderGroup.renderOrder = 4
+    const highlightLineMaterials: LineMaterial[] = []
+
+    for (const feature of geoData.features) {
+      const countyId = feature.properties.id
+      const shapes = geoToShapes(feature.geometry)
+
+      for (const shape of shapes) {
+        const fillGeom = new ShapeGeometry(shape)
+        const edges = new EdgesGeometry(fillGeom)
+        const posAttr = edges.getAttribute('position')
+        const positions: number[] = []
+        for (let i = 0; i < posAttr.count; i++) {
+          positions.push(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i))
+        }
+        const lineGeom = new LineSegmentsGeometry()
+        lineGeom.setPositions(positions)
+        const lineMat = new LineMaterial({
+          color: 0x1a6b2a,
+          linewidth: 2,
+          transparent: true,
+          opacity: 1.0,
+          depthWrite: false,
+          resolution: new Vector2(canvas.clientWidth, canvas.clientHeight),
+        })
+        highlightLineMaterials.push(lineMat)
+        const line = new LineSegments2(lineGeom, lineMat)
+        line.renderOrder = 4
+        line.visible = false
+        line.userData = { countyId }
+        highlightBorderGroup.add(line)
+        fillGeom.dispose()
+        edges.dispose()
+      }
+    }
+    scene.add(highlightBorderGroup)
 
     // --- Labels ---
     const labelGroup = new Group()
@@ -348,17 +441,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       const countyId = feature.properties.id
       const name = feature.properties.name
 
-      const [lon, lat] = geoCentroid(feature)
-      const [wx, wy] = geoToWorld(lon, lat)
-
-      const sprite = createLabelSprite(name)
-      const labelScale = 0.012
-      sprite.scale.set(labelScale * 4, labelScale, 1)
-      sprite.position.set(wx, wy, 0.01)
-      sprite.userData = { countyId }
-      labelGroup.add(sprite)
-
-      // Compute bounding box for visibility threshold (all rings, all polygons)
+      // Compute bounding box first (needed for label sizing)
       const allRings = feature.geometry.type === 'Polygon'
         ? feature.geometry.coordinates
         : feature.geometry.coordinates.flat()
@@ -372,7 +455,24 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           maxY = Math.max(maxY, cy)
         }
       }
-      countyWorldBounds.set(countyId, { width: maxX - minX, height: maxY - minY })
+      const boundsW = maxX - minX
+      const boundsH = maxY - minY
+      countyWorldBounds.set(countyId, { width: boundsW, height: boundsH })
+
+      // Scale text to fit within county width
+      // At default label scale, canvas width 512 maps to labelAspect * labelScale world units
+      // We want text to not exceed ~80% of county world width
+      const maxTextWidth = Math.min(460, (boundsW / (0.012 * 4)) * 512 * 0.8)
+
+      const [lon, lat] = geoCentroid(feature)
+      const [wx, wy] = geoToWorld(lon, lat)
+
+      const sprite = createLabelSprite(name, maxTextWidth)
+      const labelScale = 0.012
+      sprite.scale.set(labelScale * 4, labelScale, 1)
+      sprite.position.set(wx, wy, 0.01)
+      sprite.userData = { countyId }
+      labelGroup.add(sprite)
     }
     scene.add(labelGroup)
 
@@ -381,38 +481,32 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     const pointer = new Vector2()
     let hoveredCountyId: string | null = null
 
-    const HOVER_COLOR = new Color().setHSL(45 / 360, 0.4, 0.7)
-    const HOVER_OPACITY = 0.12
-    const HOVER_EMISSIVE = 0.3
-    const SELECT_OPACITY = 0.18
-    const SELECT_EMISSIVE = 0.5
+    // Multiply blending: white=no effect, darker=stronger darken
+    const DEFAULT_COLOR = new Color(1, 1, 1)
+    const HOVER_COLOR = new Color(0.72, 0.68, 0.58)
+    const SELECT_COLOR = new Color(0.35, 1.2, 0.20)
 
-    // Map of countyId+uuid -> target material properties for lerping
-    const materialTargets = new Map<string, { opacity: number; emissiveIntensity: number }>()
+    const materialTargets = new Map<string, Color>()
 
     function updateCountyMaterials() {
       countyFillGroup.traverse((child) => {
         if (!(child instanceof Mesh)) return
         const id = child.userData.countyId
-        const mat = child.material as MeshStandardMaterial
-        let targetOpacity = 0
-        let targetEmissive = 0
 
+        let target = DEFAULT_COLOR
         if (id === selectedIdRef.current) {
-          targetOpacity = SELECT_OPACITY
-          targetEmissive = SELECT_EMISSIVE
-          mat.color.copy(HOVER_COLOR)
-          mat.emissive.copy(HOVER_COLOR)
+          target = SELECT_COLOR
         } else if (id === hoveredCountyId) {
-          targetOpacity = HOVER_OPACITY
-          targetEmissive = HOVER_EMISSIVE
-          mat.color.copy(HOVER_COLOR)
-          mat.emissive.copy(HOVER_COLOR)
-        } else {
-          mat.emissive.setScalar(0)
+          target = HOVER_COLOR
         }
 
-        materialTargets.set(id + child.uuid, { opacity: targetOpacity, emissiveIntensity: targetEmissive })
+        materialTargets.set(id + child.uuid, target)
+      })
+
+      // Toggle highlight borders
+      highlightBorderGroup.traverse((child) => {
+        if (!child.userData.countyId) return
+        child.visible = child.userData.countyId === selectedIdRef.current
       })
     }
 
@@ -422,10 +516,10 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     if (!isMobile) {
       const bloom = new BloomEffect({
-        luminanceThreshold: 0.85,
-        luminanceSmoothing: 0.3,
-        intensity: 0.15,
-        radius: 0.4,
+        luminanceThreshold: 0.92,
+        luminanceSmoothing: 0.2,
+        intensity: 0.08,
+        radius: 0.3,
       })
       composer.addPass(new EffectPass(camera, bloom))
     }
@@ -706,6 +800,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       const res = new Vector2(w, h)
       terrainMaterial.uniforms.u_resolution.value = res
       waterMaterial.uniforms.u_resolution.value = res
+      for (const mat of borderLineMaterials) mat.resolution.set(w, h)
+      for (const mat of highlightLineMaterials) mat.resolution.set(w, h)
     }
     window.addEventListener('resize', handleResize)
 
@@ -762,6 +858,13 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       waterMaterial.uniforms.u_time.value = elapsed
       waterMaterial.uniforms.u_mouse.value.set(mouse.x, mouse.y)
 
+      // --- Update border width based on zoom ---
+      const frustumHeight = camera.top - camera.bottom
+      const zoomRatio = INITIAL_HALF_H * 2 / frustumHeight // >1 when zoomed in, <1 when zoomed out
+      const borderWidth = Math.max(0.3, Math.min(2.0, 0.6 * Math.sqrt(zoomRatio)))
+      for (const mat of borderLineMaterials) mat.linewidth = borderWidth
+      for (const mat of highlightLineMaterials) mat.linewidth = borderWidth
+
       // --- Update label scale and visibility based on zoom ---
       const frustumWidth = camera.right - camera.left
       const MIN_SCREEN_FRACTION = 0.06
@@ -784,15 +887,14 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         ;(child as Sprite).scale.set(labelWorldScale * labelAspect, labelWorldScale, 1)
       }
 
-      // --- Lerp county fill materials toward targets ---
+      // --- Lerp county fill colors toward targets (multiply blend) ---
       countyFillGroup.traverse((child) => {
         if (!(child instanceof Mesh)) return
         const key = child.userData.countyId + child.uuid
         const target = materialTargets.get(key)
         if (!target) return
-        const mat = child.material as MeshStandardMaterial
-        mat.opacity += (target.opacity - mat.opacity) * 0.15
-        mat.emissiveIntensity += (target.emissiveIntensity - mat.emissiveIntensity) * 0.15
+        const mat = child.material as MeshBasicMaterial
+        mat.color.lerp(target, 0.15)
       })
 
       composer.render()
@@ -818,19 +920,19 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       countyFillGroup.traverse((child) => {
         if (child instanceof Mesh) {
           child.geometry.dispose()
-          ;(child.material as MeshStandardMaterial).dispose()
+          ;(child.material as MeshBasicMaterial).dispose()
         }
       })
       countyBorderGroup.traverse((child) => {
-        if (child instanceof LineSegments) {
+        if (child instanceof LineSegments2) {
           child.geometry.dispose()
-          ;(child.material as LineBasicMaterial).dispose()
+          ;(child.material as LineMaterial).dispose()
         }
       })
-      landmassGroup.traverse((child) => {
-        if (child instanceof Mesh) {
+      highlightBorderGroup.traverse((child) => {
+        if (child instanceof LineSegments2) {
           child.geometry.dispose()
-          ;(child.material as MeshBasicMaterial).dispose()
+          ;(child.material as LineMaterial).dispose()
         }
       })
       labelGroup.traverse((child) => {
@@ -847,6 +949,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       waterGeo.dispose()
       terrainGeo.dispose()
       terrainMaterial.dispose()
+      countyMaskTex.dispose()
       waterMaterial.dispose()
     }
   }, [canvasRef, geoData, islandsData, counties])

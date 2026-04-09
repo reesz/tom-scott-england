@@ -48,11 +48,7 @@ void main() {
 
   // Outside DEM range = deep ocean (mask 0.0), no discard
   bool outsideDEM = demUV.x < 0.0 || demUV.x > 1.0 || demUV.y < 0.0 || demUV.y > 1.0;
-  float rawMask = outsideDEM ? 0.0 : texture2D(u_mask, clamp(demUV, 0.0, 1.0)).r;
-
-  // Zero out mask below ~50.5N to hide France coastline effects
-  float franceMask = smoothstep(0.10, 0.14, demUV.y);
-  float mask = rawMask * franceMask;
+  float mask = outsideDEM ? 0.0 : texture2D(u_mask, clamp(demUV, 0.0, 1.0)).r;
 
   // Water only where mask < 0.5 (ocean)
   float waterAlpha = smoothstep(0.5, 0.1, mask);
@@ -70,23 +66,26 @@ void main() {
   vec3 baseColor = mix(coastColor, midColor, smoothstep(0.0, 0.5, coastDist));
   baseColor = mix(baseColor, deepColor, smoothstep(0.5, 1.0, coastDist));
 
+  // Use demUV for noise so pattern scale is geographic, not quad-relative
+  vec2 noiseUV = demUV * 0.9;
+
   // Animated ripples - multi-octave
-  float ripple1 = snoise(v_uv * 20.0 + vec2(u_time * 0.04, u_time * 0.02)) * 0.5 + 0.5;
-  float ripple2 = snoise(v_uv * 35.0 - vec2(u_time * 0.06, u_time * 0.015)) * 0.5 + 0.5;
-  float ripple3 = snoise(v_uv * 50.0 + vec2(u_time * 0.03, -u_time * 0.04)) * 0.5 + 0.5;
+  float ripple1 = snoise(noiseUV * 20.0 + vec2(u_time * 0.04, u_time * 0.02)) * 0.5 + 0.5;
+  float ripple2 = snoise(noiseUV * 35.0 - vec2(u_time * 0.06, u_time * 0.015)) * 0.5 + 0.5;
+  float ripple3 = snoise(noiseUV * 50.0 + vec2(u_time * 0.03, -u_time * 0.04)) * 0.5 + 0.5;
   float ripples = ripple1 * 0.5 + ripple2 * 0.3 + ripple3 * 0.2;
 
   // Ripple influence on color
   baseColor += ripples * 0.04;
 
   // Fresnel-like sheen on ripple peaks — slowly drifts over time
-  float sheenShift = snoise(v_uv * 12.0 + u_time * 0.02) * 0.08;
+  float sheenShift = snoise(noiseUV * 12.0 + u_time * 0.02) * 0.08;
   float sheen = smoothstep(0.65 + sheenShift, 0.85 + sheenShift, ripples);
   baseColor += sheen * 0.08;
 
   // Subtle parallax offset for foam — mouse shifts the foam pattern slightly
   vec2 mouseOffset = (u_mouse - 0.5) * vec2(1.0, -1.0);
-  vec2 foamUV = v_uv + mouseOffset * 0.004;
+  vec2 foamUV = noiseUV + mouseOffset * 0.004;
 
   // Shore foam
   float foamZone = smoothstep(0.4, 0.15, mask) * smoothstep(0.0, 0.1, mask);
