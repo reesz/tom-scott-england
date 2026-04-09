@@ -12,8 +12,6 @@ export function Header() {
         {/* Ornamental corner accents */}
         <div className="pointer-events-none absolute -left-[1px] -top-[1px] h-2 w-2 border-l-2 border-t-2 border-[var(--gold-line)] rounded-tl-[3px]" />
         <div className="pointer-events-none absolute -right-[1px] -top-[1px] h-2 w-2 border-r-2 border-t-2 border-[var(--gold-line)] rounded-tr-[3px]" />
-        <div className="pointer-events-none absolute -bottom-[1px] -left-[1px] h-2 w-2 border-b-2 border-l-2 border-[var(--gold-line)] rounded-bl-[3px]" />
-        <div className="pointer-events-none absolute -bottom-[1px] -right-[1px] h-2 w-2 border-b-2 border-r-2 border-[var(--gold-line)] rounded-br-[3px]" />
 
         <button
           onClick={toggleMenu}

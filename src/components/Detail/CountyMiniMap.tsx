@@ -62,12 +62,13 @@ export function CountyMiniMap({ feature, county, hoveredLandmarkId }: CountyMini
           lm.pos && (
             <g key={lm.name}>
               <circle
+                data-landmark-id={lm.name}
                 cx={lm.pos[0]}
                 cy={lm.pos[1]}
                 r={hoveredLandmarkId === lm.name ? 4 : 2.5}
                 fill={hoveredLandmarkId === lm.name ? 'var(--gold)' : 'var(--green-released)'}
                 opacity={hoveredLandmarkId === lm.name ? 1 : 0.4}
-                stroke={hoveredLandmarkId === lm.name ? 'var(--ink)' : 'none'}
+                stroke={hoveredLandmarkId === lm.name ? 'var(--gold)' : 'none'}
                 strokeWidth={hoveredLandmarkId === lm.name ? 1 : 0}
                 style={{ transition: 'all 0.15s ease' }}
               />

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
 
 interface MenuOverlayProps {
@@ -16,14 +16,17 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isOpen, onClose])
 
+  const [isDark, setIsDark] = useState(
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  )
+
   const toggleTheme = useCallback(() => {
     const html = document.documentElement
-    const isDark = html.classList.contains('dark')
-    html.classList.toggle('dark', !isDark)
-    localStorage.setItem('theme', isDark ? 'light' : 'dark')
+    const next = !html.classList.contains('dark')
+    html.classList.toggle('dark', next)
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+    setIsDark(next)
   }, [])
-
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
 
   return (
     <>
