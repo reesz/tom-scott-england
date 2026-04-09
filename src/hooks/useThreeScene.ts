@@ -22,6 +22,7 @@ import {
   Color,
   Sprite,
   SpriteMaterial,
+  Raycaster,
   type Texture,
 } from 'three'
 import {
@@ -101,6 +102,11 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const centerRef = useRef<[number, number]>([INITIAL_CENTER[0], INITIAL_CENTER[1]])
   const halfHRef = useRef(INITIAL_HALF_H)
   const flyToRef = useRef<FlyToTarget | null>(null)
+  const selectedIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    selectedIdRef.current = options.selectedId
+  }, [options.selectedId])
 
   // --- Public API callbacks ---
   const flyTo = useCallback(
@@ -353,6 +359,46 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     }
     scene.add(labelGroup)
 
+    // --- Raycasting & Interaction ---
+    const raycaster = new Raycaster()
+    const pointer = new Vector2()
+    let hoveredCountyId: string | null = null
+
+    const HOVER_COLOR = new Color().setHSL(45 / 360, 0.4, 0.7)
+    const HOVER_OPACITY = 0.12
+    const HOVER_EMISSIVE = 0.3
+    const SELECT_OPACITY = 0.18
+    const SELECT_EMISSIVE = 0.5
+
+    // Map of countyId+uuid -> target material properties for lerping
+    const materialTargets = new Map<string, { opacity: number; emissiveIntensity: number }>()
+
+    function updateCountyMaterials() {
+      countyFillGroup.traverse((child) => {
+        if (!(child instanceof Mesh)) return
+        const id = child.userData.countyId
+        const mat = child.material as MeshStandardMaterial
+        let targetOpacity = 0
+        let targetEmissive = 0
+
+        if (id === selectedIdRef.current) {
+          targetOpacity = SELECT_OPACITY
+          targetEmissive = SELECT_EMISSIVE
+          mat.color.copy(HOVER_COLOR)
+          mat.emissive.copy(HOVER_COLOR)
+        } else if (id === hoveredCountyId) {
+          targetOpacity = HOVER_OPACITY
+          targetEmissive = HOVER_EMISSIVE
+          mat.color.copy(HOVER_COLOR)
+          mat.emissive.copy(HOVER_COLOR)
+        } else {
+          mat.emissive.setScalar(0)
+        }
+
+        materialTargets.set(id + child.uuid, { opacity: targetOpacity, emissiveIntensity: targetEmissive })
+      })
+    }
+
     // --- Post-Processing ---
     const composer = new EffectComposer(renderer)
     composer.addPass(new RenderPass(scene, camera))
@@ -398,41 +444,94 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       window.addEventListener('mousemove', handleMouse)
     }
 
-    // --- Pan state ---
+    // --- Pan & Interaction state ---
     let isPanning = false
     let panStartX = 0
     let panStartY = 0
+    let pointerDownX = 0
+    let pointerDownY = 0
+    let pointerMoved = false
 
     const handlePointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return
       isPanning = true
+      pointerMoved = false
       panStartX = e.clientX
       panStartY = e.clientY
+      pointerDownX = e.clientX
+      pointerDownY = e.clientY
       canvas.setPointerCapture(e.pointerId)
     }
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (!isPanning) return
-      const dx = e.clientX - panStartX
-      const dy = e.clientY - panStartY
-      panStartX = e.clientX
-      panStartY = e.clientY
+      // Raycast for hover (always, even when not panning)
+      const rect = canvas.getBoundingClientRect()
+      pointer.set(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -(((e.clientY - rect.top) / rect.height) * 2 - 1),
+      )
+      raycaster.setFromCamera(pointer, camera)
+      const hits = raycaster.intersectObjects(countyFillGroup.children, false)
+      const newHoveredId = hits.length > 0 ? hits[0].object.userData.countyId : null
 
-      // Convert pixel deltas to world-space deltas
-      const currentHalfH = halfHRef.current
-      const currentAspect = canvas.clientWidth / canvas.clientHeight
-      const worldPerPixelX = (currentHalfH * 2 * currentAspect) / canvas.clientWidth
-      const worldPerPixelY = (currentHalfH * 2) / canvas.clientHeight
+      if (newHoveredId !== hoveredCountyId) {
+        hoveredCountyId = newHoveredId
+        options.onHoverCounty(hoveredCountyId)
+        updateCountyMaterials()
+      }
 
-      centerRef.current[0] -= dx * worldPerPixelX
-      centerRef.current[1] += dy * worldPerPixelY
+      canvas.style.cursor = hoveredCountyId ? 'pointer' : (isPanning ? 'grabbing' : 'default')
 
-      // Cancel any ongoing fly-to
-      flyToRef.current = null
+      // Pan handling
+      if (isPanning) {
+        const dx = e.clientX - panStartX
+        const dy = e.clientY - panStartY
+        if (Math.abs(e.clientX - pointerDownX) > 3 || Math.abs(e.clientY - pointerDownY) > 3) {
+          pointerMoved = true
+        }
+        panStartX = e.clientX
+        panStartY = e.clientY
+
+        const currentHalfH = halfHRef.current
+        const currentAspect = canvas.clientWidth / canvas.clientHeight
+        const worldPerPixelX = (currentHalfH * 2 * currentAspect) / canvas.clientWidth
+        const worldPerPixelY = (currentHalfH * 2) / canvas.clientHeight
+
+        centerRef.current[0] -= dx * worldPerPixelX
+        centerRef.current[1] += dy * worldPerPixelY
+
+        flyToRef.current = null
+      }
     }
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
       isPanning = false
+      canvas.releasePointerCapture(e.pointerId)
+      canvas.style.cursor = hoveredCountyId ? 'pointer' : 'default'
+
+      // Click detection: pointer didn't move significantly
+      if (!pointerMoved && hoveredCountyId) {
+        selectedIdRef.current = hoveredCountyId
+        options.onSelectCounty(hoveredCountyId)
+        updateCountyMaterials()
+
+        // Fly to the selected county
+        const feature = geoData!.features.find((f) => f.properties.id === hoveredCountyId)
+        if (feature) {
+          const [lon, lat] = geoCentroid(feature)
+          const elapsed = clockRef.current?.getElapsedTime() ?? 0
+          flyToRef.current = {
+            centerX: geoToWorld(lon, lat)[0],
+            centerY: geoToWorld(lon, lat)[1],
+            halfH: clamp(0.04, MIN_HALF_H, MAX_HALF_H),
+            startCenterX: centerRef.current[0],
+            startCenterY: centerRef.current[1],
+            startHalfH: halfHRef.current,
+            startTime: elapsed,
+            duration: 0.8,
+          }
+        }
+      }
     }
 
     canvas.addEventListener('pointerdown', handlePointerDown)
@@ -586,6 +685,17 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         mat.opacity += (targetOpacity - mat.opacity) * 0.1
         mat.visible = mat.opacity > 0.01
       }
+
+      // --- Lerp county fill materials toward targets ---
+      countyFillGroup.traverse((child) => {
+        if (!(child instanceof Mesh)) return
+        const key = child.userData.countyId + child.uuid
+        const target = materialTargets.get(key)
+        if (!target) return
+        const mat = child.material as MeshStandardMaterial
+        mat.opacity += (target.opacity - mat.opacity) * 0.15
+        mat.emissiveIntensity += (target.emissiveIntensity - mat.emissiveIntensity) * 0.15
+      })
 
       composer.render()
       animFrameId = requestAnimationFrame(render)
