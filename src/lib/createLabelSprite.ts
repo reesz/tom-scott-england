@@ -82,7 +82,7 @@ function renderLabel(
   const totalTitleWidth = titleWidth + (hasIcon ? ICON_SIZE + ICON_GAP : 0)
 
   // Title Y: pushed up if we have a subtitle
-  const hasSubtitle = !!data.releaseDate
+  const hasSubtitle = data.status === 'upcoming' || !!data.releaseDate
   const titleY = hasSubtitle ? CANVAS_HEIGHT * 0.38 : CANVAS_HEIGHT * 0.45
 
   // Shadow for title
@@ -107,8 +107,8 @@ function renderLabel(
   // --- Subtitle row ---
   if (hasSubtitle) {
     const subText = data.status === 'upcoming'
-      ? formatReleaseDate(data.releaseDate!)
-      : formatPastDate(data.releaseDate!)
+      ? (data.releaseDate ? formatReleaseDate(data.releaseDate) : 'Coming Soon')
+      : (data.releaseDate ? formatPastDate(data.releaseDate) : '')
     if (subText) {
       const subY = titleY + TITLE_SIZE * 0.5 + SUB_SIZE * 0.6
 
