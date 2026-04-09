@@ -461,6 +461,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           opacity: 1.0,
           depthWrite: false,
           blending: MultiplyBlending,
+          premultipliedAlpha: true,
           resolution: new Vector2(canvas.clientWidth, canvas.clientHeight),
         })
         borderLineMaterials.push(lineMat)
@@ -619,8 +620,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     const loadedTextures: Texture[] = []
 
     Promise.all([
-      loadTex('/data/dem-heightmap.png'),
-      loadTex('/data/land-mask.png'),
+      loadTex(`${import.meta.env.BASE_URL}data/dem-heightmap.png`),
+      loadTex(`${import.meta.env.BASE_URL}data/land-mask.png`),
     ]).then(([demTex, maskTex]) => {
       if (texturesCancelled) {
         demTex.dispose()
