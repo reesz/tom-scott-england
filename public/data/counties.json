@@ -112,7 +112,7 @@
       "areaSqKm": 540,
       "countyTown": { "name": "Newcastle upon Tyne", "coords": { "lat": 54.9783, "lng": -1.6178 } },
       "description": "A metropolitan county straddling the River Tyne estuary, famed for its iconic bridges, Roman heritage, and proud northeastern identity.",
-      "coatOfArms": "/assets/arms/tyne-and-wear.svg",
+      "coatOfArms": null,
       "landmarks": [
         { "name": "Tyne Bridge", "coords": { "lat": 54.9686, "lng": -1.6083 } },
         { "name": "Angel of the North", "coords": { "lat": 54.9143, "lng": -1.5890 } },
