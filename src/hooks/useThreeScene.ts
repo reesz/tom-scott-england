@@ -56,6 +56,10 @@ const INITIAL_HALF_H = 0.15
 const DEM_SIZE = 2048
 const WATER_QUAD_SIZE = 4.0
 
+// Pan clamp: UK must remain partially visible (~2 degrees padding beyond UK bounds)
+const PAN_CLAMP_MIN = geoToWorld(-13, 47) // SW corner with padding
+const PAN_CLAMP_MAX = geoToWorld(4, 63) // NE corner with padding
+
 // DEM world-space extents
 const DEM_CENTER_X = (DEM_WORLD_MIN[0] + DEM_WORLD_MAX[0]) / 2
 const DEM_CENTER_Y = (DEM_WORLD_MIN[1] + DEM_WORLD_MAX[1]) / 2
@@ -90,6 +94,11 @@ function easeInOutCubic(t: number): number {
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))
+}
+
+function clampCenter(center: [number, number]): void {
+  center[0] = clamp(center[0], PAN_CLAMP_MIN[0], PAN_CLAMP_MAX[0])
+  center[1] = clamp(center[1], PAN_CLAMP_MIN[1], PAN_CLAMP_MAX[1])
 }
 
 export function useThreeScene(options: UseThreeSceneOptions) {
@@ -349,17 +358,19 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       sprite.userData = { countyId }
       labelGroup.add(sprite)
 
-      // Compute bounding box for visibility threshold
-      const coords = feature.geometry.type === 'Polygon'
-        ? feature.geometry.coordinates[0]
-        : feature.geometry.coordinates[0][0]
+      // Compute bounding box for visibility threshold (all rings, all polygons)
+      const allRings = feature.geometry.type === 'Polygon'
+        ? feature.geometry.coordinates
+        : feature.geometry.coordinates.flat()
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
-      for (const [clon, clat] of coords) {
-        const [cx, cy] = geoToWorld(clon, clat)
-        minX = Math.min(minX, cx)
-        maxX = Math.max(maxX, cx)
-        minY = Math.min(minY, cy)
-        maxY = Math.max(maxY, cy)
+      for (const ring of allRings) {
+        for (const [clon, clat] of ring) {
+          const [cx, cy] = geoToWorld(clon, clat)
+          minX = Math.min(minX, cx)
+          maxX = Math.max(maxX, cx)
+          minY = Math.min(minY, cy)
+          maxY = Math.max(maxY, cy)
+        }
       }
       countyWorldBounds.set(countyId, { width: maxX - minX, height: maxY - minY })
     }
@@ -426,10 +437,19 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     composer.addPass(new EffectPass(camera, vignette))
 
     // --- Load textures ---
+    let texturesCancelled = false
+    const loadedTextures: Texture[] = []
+
     Promise.all([
       loadTex('/data/dem-heightmap.png'),
       loadTex('/data/land-mask.png'),
     ]).then(([demTex, maskTex]) => {
+      if (texturesCancelled) {
+        demTex.dispose()
+        maskTex.dispose()
+        return
+      }
+      loadedTextures.push(demTex, maskTex)
       terrainMaterial.uniforms.u_dem.value = demTex
       terrainMaterial.uniforms.u_mask.value = maskTex
       waterMaterial.uniforms.u_mask.value = maskTex
@@ -486,7 +506,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         updateCountyMaterials()
       }
 
-      canvas.style.cursor = hoveredCountyId ? 'pointer' : (isPanning ? 'grabbing' : 'default')
+      canvas.style.cursor = hoveredCountyId ? 'pointer' : (isPanning ? 'grabbing' : 'grab')
 
       // Pan handling
       if (isPanning) {
@@ -505,6 +525,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
         centerRef.current[0] -= dx * worldPerPixelX
         centerRef.current[1] += dy * worldPerPixelY
+        clampCenter(centerRef.current)
 
         flyToRef.current = null
       }
@@ -573,6 +594,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
       centerRef.current[0] = worldX - ndcX * newHalfH * currentAspect
       centerRef.current[1] = worldY - ndcY * newHalfH
+      clampCenter(centerRef.current)
 
       halfHRef.current = newHalfH
 
@@ -811,6 +833,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           ;(child.material as SpriteMaterial).dispose()
         }
       })
+      texturesCancelled = true
+      for (const tex of loadedTextures) tex.dispose()
       clockRef.current = null
       renderer.dispose()
       composer.dispose()
