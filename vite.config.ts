@@ -1,16 +1,14 @@
 import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
+import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
-import { paraglideVitePlugin } from '@inlang/paraglide-js'
-
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
-  ssr: {
-    noExternal: ['three', 'postprocessing'],
+  server: {
+    watch: {
+      ignored: ['**/routeTree.gen.ts'],
+    },
   },
   optimizeDeps: {
     include: ['three', 'postprocessing', 'use-sync-external-store/shim/with-selector'],
@@ -27,15 +25,9 @@ const config = defineConfig({
         }
       },
     },
-    devtools(),
-    paraglideVitePlugin({
-      project: './project.inlang',
-      outdir: './src/paraglide',
-      strategy: ['url', 'baseLocale'],
-    }),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
-    tanstackStart(),
+    TanStackRouterVite({ autoCodeSplitting: true }),
     viteReact(),
   ],
 })

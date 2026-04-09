@@ -16,17 +16,19 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [isOpen, onClose])
 
-  const [isDark, setIsDark] = useState(
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains('dark')
   )
 
   const toggleTheme = useCallback(() => {
     const html = document.documentElement
-    const next = !html.classList.contains('dark')
-    html.classList.toggle('dark', next)
+    const next = !isDark
+    html.classList.remove('light', 'dark')
+    html.classList.add(next ? 'dark' : 'light')
+    html.style.colorScheme = next ? 'dark' : 'light'
     localStorage.setItem('theme', next ? 'dark' : 'light')
     setIsDark(next)
-  }, [])
+  }, [isDark])
 
   return (
     <>
