@@ -341,6 +341,39 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     terrainMesh.renderOrder = 1
     scene.add(terrainMesh)
 
+    // --- Stripe shader material for unreleased counties ---
+    const stripeMaterial = new ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      uniforms: {
+        uStripeSpacing: { value: 0.0012 },
+        uStripeWidth: { value: 0.0004 },
+        uColor: { value: new Vector4(0.36, 0.29, 0.22, 0.25) },
+      },
+      vertexShader: `
+        varying vec2 vWorldPos;
+        void main() {
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPos = worldPos.xy;
+          gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+      `,
+      fragmentShader: `
+        precision highp float;
+        varying vec2 vWorldPos;
+        uniform float uStripeSpacing;
+        uniform float uStripeWidth;
+        uniform vec4 uColor;
+        void main() {
+          float diag = (vWorldPos.x + vWorldPos.y) * 0.7071;
+          float d = mod(diag, uStripeSpacing);
+          float stripe = step(uStripeSpacing - uStripeWidth, d);
+          gl_FragColor = vec4(uColor.rgb, uColor.a * stripe);
+        }
+      `,
+    })
+
     // --- County Fills ---
     const countyFillGroup = new Group()
     countyFillGroup.renderOrder = 3
@@ -361,9 +394,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           depthWrite: false,
           blending: CustomBlending,
           blendEquation: AddEquation,
-          blendSrc: DstColorFactor,   // rgb: result = src * dst_color + dst * 0 = src * dst
+          blendSrc: DstColorFactor,
           blendDst: ZeroFactor,
-          blendSrcAlpha: ZeroFactor,  // alpha: leave dst alpha unchanged
+          blendSrcAlpha: ZeroFactor,
           blendDstAlpha: OneFactor,
         })
         const mesh = new Mesh(geom, mat)
@@ -373,6 +406,24 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       }
     }
     scene.add(countyFillGroup)
+
+    // --- Stripe overlay for unreleased counties ---
+    const stripeOverlayGroup = new Group()
+    stripeOverlayGroup.renderOrder = 3.5
+    for (const feature of geoData.features) {
+      const countyId = feature.properties.id
+      const county = counties.find((c) => c.id === countyId)
+      if (county?.status === 'released') continue
+      const shapes = geoToShapes(feature.geometry)
+      for (const shape of shapes) {
+        const geom = new ShapeGeometry(shape)
+        const mesh = new Mesh(geom, stripeMaterial)
+        mesh.position.z = 0.02
+        mesh.renderOrder = 3.5
+        stripeOverlayGroup.add(mesh)
+      }
+    }
+    scene.add(stripeOverlayGroup)
 
     // --- County Borders (thick lines via LineSegments2) ---
     const countyBorderGroup = new Group()
