@@ -24,7 +24,7 @@ const CornerOrnament = ({ className }: { className: string }) => (
 export function DetailPanel({ isOpen, onClose, children }: DetailPanelProps) {
   return (
     <aside
-      className={`fixed right-0 top-0 z-20 hidden h-full w-[320px] transition-transform duration-300 ease-out md:flex lg:w-[400px] ${
+      className={`fixed right-0 top-0 z-20 hidden h-full w-[380px] transition-transform duration-300 ease-out md:flex lg:w-[440px] ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
       style={{ boxShadow: `-6px 0 24px var(--shadow-strong)` }}
