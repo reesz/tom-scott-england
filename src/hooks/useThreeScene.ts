@@ -621,6 +621,60 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
     canvas.addEventListener('touchend', handleTouchEnd, { passive: true })
 
+    // --- Keyboard navigation ---
+    let focusedCountyIndex = -1
+    const countyIds = geoData.features.map((f) => f.properties.id)
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        e.preventDefault()
+        if (e.shiftKey) {
+          focusedCountyIndex = (focusedCountyIndex - 1 + countyIds.length) % countyIds.length
+        } else {
+          focusedCountyIndex = (focusedCountyIndex + 1) % countyIds.length
+        }
+        const id = countyIds[focusedCountyIndex]
+        hoveredCountyId = id
+        options.onHoverCounty(id)
+        updateCountyMaterials()
+
+        // Fly to focused county
+        const feature = geoData.features[focusedCountyIndex]
+        if (feature) {
+          const [lon, lat] = geoCentroid(feature)
+          const [wx, wy] = geoToWorld(lon, lat)
+          const elapsed = clockRef.current?.getElapsedTime() ?? 0
+          flyToRef.current = {
+            centerX: wx,
+            centerY: wy,
+            halfH: clamp(0.06, MIN_HALF_H, MAX_HALF_H),
+            startCenterX: centerRef.current[0],
+            startCenterY: centerRef.current[1],
+            startHalfH: halfHRef.current,
+            startTime: elapsed,
+            duration: 0.4,
+          }
+        }
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        if (hoveredCountyId) {
+          selectedIdRef.current = hoveredCountyId
+          options.onSelectCounty(hoveredCountyId)
+          updateCountyMaterials()
+        }
+      } else if (e.key === 'Escape') {
+        hoveredCountyId = null
+        focusedCountyIndex = -1
+        options.onHoverCounty(null)
+        updateCountyMaterials()
+      }
+    }
+
+    canvas.setAttribute('tabindex', '0')
+    canvas.setAttribute('role', 'application')
+    canvas.setAttribute('aria-label', 'Interactive map of England counties')
+    canvas.addEventListener('keydown', handleKeyDown)
+
     // --- Resize handler ---
     const handleResize = () => {
       const w = canvas.clientWidth
@@ -732,6 +786,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       canvas.removeEventListener('touchstart', handleTouchStart)
       canvas.removeEventListener('touchmove', handleTouchMove)
       canvas.removeEventListener('touchend', handleTouchEnd)
+      canvas.removeEventListener('keydown', handleKeyDown)
       countyFillGroup.traverse((child) => {
         if (child instanceof Mesh) {
           child.geometry.dispose()
