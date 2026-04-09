@@ -43,7 +43,7 @@ export function CountyDetail({ county, feature }: CountyDetailProps) {
         <div>
           {county.coatOfArms && (
             <img
-              src={county.coatOfArms}
+              src={`${import.meta.env.BASE_URL}${county.coatOfArms.replace(/^\//, '')}`}
               alt={`${county.name} coat of arms`}
               className="float-left mr-3 mb-1 h-16 w-16 object-contain"
             />
