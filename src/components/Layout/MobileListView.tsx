@@ -41,13 +41,13 @@ export function MobileListView({ counties, isOpen, onClose, onSelectCounty }: Mo
         }`}
       >
         <div className="sticky top-0 flex items-center justify-between border-b border-[var(--line)] bg-[var(--surface-strong)] px-5 py-3">
-          <h2 className="display-title text-base font-bold text-[var(--sea-ink)]">All Counties</h2>
+          <h2 className="display-title text-base font-bold text-[var(--ink)]">All Counties</h2>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-[var(--link-bg-hover)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--line)] hover:bg-[var(--parchment-dark)]"
             aria-label="Close list"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round">
               <line x1="3" y1="3" x2="13" y2="13" />
               <line x1="13" y1="3" x2="3" y2="13" />
             </svg>
@@ -56,14 +56,14 @@ export function MobileListView({ counties, isOpen, onClose, onSelectCounty }: Mo
 
         {released.length > 0 && (
           <div className="px-4 py-3">
-            <p className="island-kicker mb-2">Released</p>
+            <p className="atlas-kicker mb-2">Released</p>
             {released.map((c) => (
               <button
                 key={c.id}
                 onClick={() => handleSelect(c.id)}
-                className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition hover:bg-[var(--link-bg-hover)]"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-[var(--parchment-dark)]"
               >
-                <span className="text-sm font-semibold text-[var(--sea-ink)]">{c.name}</span>
+                <span className="display-title text-sm font-semibold text-[var(--ink)]">{c.name}</span>
                 <CountdownBadge status={c.status} releaseDate={c.releaseDate} />
               </button>
             ))}
@@ -72,14 +72,14 @@ export function MobileListView({ counties, isOpen, onClose, onSelectCounty }: Mo
 
         {upcoming.length > 0 && (
           <div className="border-t border-[var(--line)] px-4 py-3">
-            <p className="island-kicker mb-2">Coming Soon</p>
+            <p className="atlas-kicker mb-2">Coming Soon</p>
             {upcoming.map((c) => (
               <button
                 key={c.id}
                 onClick={() => handleSelect(c.id)}
-                className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition hover:bg-[var(--link-bg-hover)]"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition hover:bg-[var(--parchment-dark)]"
               >
-                <span className="text-sm text-[var(--sea-ink-soft)]">{c.name}</span>
+                <span className="display-title text-sm text-[var(--ink-soft)]">{c.name}</span>
                 <CountdownBadge status={c.status} releaseDate={c.releaseDate} />
               </button>
             ))}
