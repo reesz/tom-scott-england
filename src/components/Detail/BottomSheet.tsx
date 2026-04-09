@@ -57,7 +57,7 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
       ref={sheetRef}
       {...bind()}
       onPointerUp={handleDragEnd}
-      className={`fixed left-0 right-0 z-20 h-[calc(100dvh-40px)] touch-none rounded-t-2xl border-t border-[var(--line)] bg-[var(--surface-strong)] shadow-2xl backdrop-blur-lg md:hidden`}
+      className={`fixed left-0 right-0 z-20 h-[calc(100dvh-40px)] touch-none rounded-t-2xl border-t border-[var(--line)] bg-[var(--parchment-light)] shadow-2xl backdrop-blur-lg md:hidden`}
       style={{
         transform: `translateY(${snapY})`,
         transition: 'transform 0.3s ease-out',
@@ -65,8 +65,17 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
       }}
     >
       <div className="flex justify-center py-3">
-        <div className="h-1 w-10 rounded-full bg-[var(--line)]" />
+        <div className="h-1 w-10 rounded-full bg-[var(--gold-line)]" />
       </div>
+      {/* Gold rule */}
+      <div className="mx-4 h-px bg-[linear-gradient(90deg,transparent,var(--gold-line),transparent)]" />
+      {/* Corner ornaments */}
+      <svg className="pointer-events-none absolute left-2 top-2 opacity-45" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" strokeWidth="1.2">
+        <path d="M2 2Q11 2 11 11Q2 11 2 2Z" /><path d="M4.5 4.5Q9 4.5 9 9Q4.5 9 4.5 4.5Z" />
+      </svg>
+      <svg className="pointer-events-none absolute right-2 top-2 -scale-x-100 opacity-45" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" strokeWidth="1.2">
+        <path d="M2 2Q11 2 11 11Q2 11 2 2Z" /><path d="M4.5 4.5Q9 4.5 9 9Q4.5 9 4.5 4.5Z" />
+      </svg>
       <div className="h-[calc(100%-2rem)] overflow-y-auto px-5 pb-8">
         {children}
       </div>
