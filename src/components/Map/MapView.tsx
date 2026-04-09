@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useCountyData } from '#/hooks/useCountyData'
 import { useGeoData } from '#/hooks/useGeoData'
 import { useThreeScene } from '#/hooks/useThreeScene'
@@ -34,6 +34,17 @@ export function MapView({ selectedId, onSelectCounty, onCloseDetail }: MapViewPr
 
   const panelOpen = !!selectedCounty
 
+  // Global Escape key to close sidebar regardless of focus
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && panelOpen) {
+        onCloseDetail()
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [panelOpen, onCloseDetail])
+
   const { zoomIn, zoomOut, resetView } = useThreeScene({
     canvasRef,
     geoData,
@@ -43,6 +54,7 @@ export function MapView({ selectedId, onSelectCounty, onCloseDetail }: MapViewPr
     panelOpen,
     onSelectCounty,
     onHoverCounty: setHoveredId,
+    onCloseDetail,
   })
 
   if (countiesLoading || geoLoading || !geoData) {

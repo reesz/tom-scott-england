@@ -82,6 +82,7 @@ export interface UseThreeSceneOptions {
   panelOpen: boolean
   onSelectCounty: (id: string) => void
   onHoverCounty: (id: string | null) => void
+  onCloseDetail: () => void
 }
 
 interface FlyToTarget {
@@ -123,6 +124,14 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const panelOpenRef = useRef(false)
 
   const updateMaterialsRef = useRef<(() => void) | null>(null)
+
+  // Keep callbacks in refs so the Three.js closure always calls the latest version
+  const onSelectCountyRef = useRef(options.onSelectCounty)
+  onSelectCountyRef.current = options.onSelectCounty
+  const onHoverCountyRef = useRef(options.onHoverCounty)
+  onHoverCountyRef.current = options.onHoverCounty
+  const onCloseDetailRef = useRef(options.onCloseDetail)
+  onCloseDetailRef.current = options.onCloseDetail
 
   useEffect(() => {
     panelOpenRef.current = options.panelOpen
@@ -698,7 +707,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
       if (newHoveredId !== hoveredCountyId) {
         hoveredCountyId = newHoveredId
-        options.onHoverCounty(hoveredCountyId)
+        onHoverCountyRef.current(hoveredCountyId)
         updateCountyMaterials()
       }
 
@@ -735,7 +744,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       // Click detection: pointer didn't move significantly
       if (!pointerMoved && hoveredCountyId) {
         selectedIdRef.current = hoveredCountyId
-        options.onSelectCounty(hoveredCountyId)
+        onSelectCountyRef.current(hoveredCountyId)
         updateCountyMaterials()
 
         // Fly to the selected county
@@ -855,7 +864,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         }
         const id = countyIds[focusedCountyIndex]
         hoveredCountyId = id
-        options.onHoverCounty(id)
+        onHoverCountyRef.current(id)
         updateCountyMaterials()
 
         // Fly to focused county
@@ -879,13 +888,16 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         e.preventDefault()
         if (hoveredCountyId) {
           selectedIdRef.current = hoveredCountyId
-          options.onSelectCounty(hoveredCountyId)
+          onSelectCountyRef.current(hoveredCountyId)
           updateCountyMaterials()
         }
       } else if (e.key === 'Escape') {
+        if (selectedIdRef.current) {
+          onCloseDetailRef.current()
+        }
         hoveredCountyId = null
         focusedCountyIndex = -1
-        options.onHoverCounty(null)
+        onHoverCountyRef.current(null)
         updateCountyMaterials()
       }
     }

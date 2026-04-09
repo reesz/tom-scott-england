@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { County } from '#/types/county'
 import type { CountyFeature } from '#/hooks/useGeoData'
 import { CountyMiniMap } from './CountyMiniMap'
-import { VideoSection } from './VideoSection'
+import { VideoEmbed, PlatformButtons } from './VideoSection'
 
 interface CountyDetailProps {
   county: County
@@ -23,12 +23,17 @@ export function CountyDetail({ county, feature }: CountyDetailProps) {
   return (
     <div className="flex flex-col gap-5">
       {/* 1. Video embed */}
-      <VideoSection
+      <VideoEmbed
         youtubeId={county.youtubeId}
         nebulaUrl={county.nebulaUrl}
         status={county.status}
         releaseDate={county.releaseDate}
       />
+
+      {/* Platform buttons — sticky at top of scroll */}
+      {county.status === 'released' && (
+        <PlatformButtons youtubeId={county.youtubeId} nebulaUrl={county.nebulaUrl} />
+      )}
 
       {/* 2. County header + description */}
       <div className="pt-1">
