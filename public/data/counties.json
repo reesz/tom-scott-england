@@ -12,10 +12,10 @@
         { "name": "Rutland Water", "coords": { "lat": 52.658, "lng": -0.720 } },
         { "name": "Oakham Castle", "coords": { "lat": 52.671, "lng": -0.731 } }
       ],
-      "youtubeId": "placeholder",
-      "nebulaUrl": "https://nebula.tv/videos/placeholder",
+      "youtubeId": "zKx1VJsLsfk",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-they-can-fly-200-miles-with-no-fuel-heres-how",
       "status": "released",
-      "releaseDate": "2026-03-20"
+      "releaseDate": "2026-03-30"
     },
     {
       "id": "greater-london",
@@ -263,9 +263,9 @@
         { "name": "Burghley House", "coords": { "lat": 52.6507, "lng": -0.4788 } }
       ],
       "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-missed-the-evidence-can-you-spot-it",
+      "status": "released",
+      "releaseDate": "2026-04-06"
     },
     {
       "id": "derbyshire",
@@ -586,10 +586,10 @@
         { "name": "Bradgate Park", "coords": { "lat": 52.6929, "lng": -1.2334 } },
         { "name": "Belvoir Castle", "coords": { "lat": 52.8793, "lng": -0.7916 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "GpaNijzRaJI",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-helped-break-a-142yearold-bell-and-thats-okay",
+      "status": "released",
+      "releaseDate": "2026-03-23"
     },
     {
       "id": "norfolk",

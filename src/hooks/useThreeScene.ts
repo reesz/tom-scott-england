@@ -48,7 +48,7 @@ import {
 } from '#/lib/mercator'
 import { geoCentroid } from 'd3-geo'
 import { geoToShapes } from '#/lib/geoToShape'
-import { createLabelSprite } from '#/lib/createLabelSprite'
+import { createLabelSprite, updateLabelTexture } from '#/lib/createLabelSprite'
 import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js'
@@ -122,9 +122,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const selectedIdRef = useRef<string | null>(null)
   const panelOpenRef = useRef(false)
 
-  useEffect(() => {
-    selectedIdRef.current = options.selectedId
-  }, [options.selectedId])
+  const updateMaterialsRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     panelOpenRef.current = options.panelOpen
@@ -161,6 +159,19 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const resetView = useCallback(() => {
     flyTo(-1.5, 53.0, INITIAL_HALF_H)
   }, [flyTo])
+
+  useEffect(() => {
+    const prev = selectedIdRef.current
+    selectedIdRef.current = options.selectedId
+
+    // When deselected, fly back to initial view
+    if (prev && !options.selectedId) {
+      flyTo(-1.5, 53.0, INITIAL_HALF_H)
+    }
+
+    // Trigger material update so highlight clears immediately
+    updateMaterialsRef.current?.()
+  }, [options.selectedId, flyTo])
 
   // --- Scene setup effect ---
   useEffect(() => {
@@ -331,10 +342,14 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       const countyId = feature.properties.id
       const shapes = geoToShapes(feature.geometry)
 
+      const county = counties.find((c) => c.id === countyId)
+      const isReleased = county?.status === 'released'
+
       for (const shape of shapes) {
         const geom = new ShapeGeometry(shape)
+        const initColor = isReleased ? new Color(1, 1, 1) : new Color(1.0, 0.75, 0.45)
         const mat = new MeshBasicMaterial({
-          color: new Color(1, 1, 1),
+          color: initColor,
           transparent: true,
           depthWrite: false,
           blending: CustomBlending,
@@ -346,7 +361,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         })
         const mesh = new Mesh(geom, mat)
         mesh.renderOrder = 3
-        mesh.userData = { countyId, countyName: feature.properties.name }
+        mesh.userData = { countyId, countyName: feature.properties.name, isReleased }
         countyFillGroup.add(mesh)
       }
     }
@@ -462,9 +477,15 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       const [lon, lat] = geoCentroid(feature)
       const [wx, wy] = geoToWorld(lon, lat)
 
-      const sprite = createLabelSprite(name)
+      const county = counties.find((c) => c.id === countyId)
+      const sprite = createLabelSprite({
+        name,
+        hasVideo: !!(county?.youtubeId || county?.nebulaUrl),
+        status: county?.status ?? 'released',
+        releaseDate: county?.releaseDate ?? null,
+      })
       sprite.position.set(wx, wy, 0.01)
-      sprite.userData = { countyId, boundsW }
+      sprite.userData = { ...sprite.userData, countyId, boundsW }
       labelGroup.add(sprite)
     }
     scene.add(labelGroup)
@@ -475,7 +496,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     let hoveredCountyId: string | null = null
 
     // Multiply blending: white=no effect, darker=stronger darken
-    const DEFAULT_COLOR = new Color(1, 1, 1)
+    const DEFAULT_RELEASED = new Color(1, 1, 1)
+    const DEFAULT_UPCOMING = new Color(1.0, 0.75, 0.45) // warm orange tint for unreleased
     const HOVER_COLOR = new Color(0.72, 0.68, 0.58)
     const SELECT_COLOR = new Color(0.35, 1.2, 0.20)
 
@@ -485,8 +507,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       countyFillGroup.traverse((child) => {
         if (!(child instanceof Mesh)) return
         const id = child.userData.countyId
+        const isReleased = child.userData.isReleased
 
-        let target = DEFAULT_COLOR
+        let target = isReleased ? DEFAULT_RELEASED : DEFAULT_UPCOMING
         if (id === selectedIdRef.current) {
           target = SELECT_COLOR
         } else if (id === hoveredCountyId) {
@@ -502,6 +525,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         child.visible = child.userData.countyId === selectedIdRef.current
       })
     }
+    updateMaterialsRef.current = updateCountyMaterials
 
     // --- Post-Processing ---
     const composer = new EffectComposer(renderer)
@@ -829,6 +853,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     // --- Render loop ---
     let animFrameId = 0
+    let lastCountdownRefresh = 0
 
     const render = () => {
       const elapsed = prefersReducedMotion ? 0 : clock.getElapsedTime()
@@ -889,7 +914,18 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
       // --- Update label visibility and scale (only hovered/selected) ---
       const frustumWidth = camera.right - camera.left
-      const LABEL_ASPECT = 4 // 512:128 canvas aspect
+      const LABEL_ASPECT = 512 / 192 // canvas aspect
+
+      // Refresh countdown textures every 30s for visible upcoming labels
+      const now = clock.getElapsedTime()
+      if (now - lastCountdownRefresh > 30) {
+        lastCountdownRefresh = now
+        for (const child of labelGroup.children) {
+          const s = child as Sprite
+          const m = s.material as SpriteMaterial
+          if (m.visible) updateLabelTexture(s)
+        }
+      }
 
       for (const child of labelGroup.children) {
         const sprite = child as Sprite
