@@ -12,6 +12,14 @@ import {
   Clock,
   Vector2,
   Vector4,
+  ShapeGeometry,
+  EdgesGeometry,
+  LineSegments,
+  LineBasicMaterial,
+  MeshStandardMaterial,
+  MeshBasicMaterial,
+  Group,
+  Color,
   type Texture,
 } from 'three'
 import {
@@ -31,6 +39,7 @@ import {
   DEM_WORLD_MIN,
   DEM_WORLD_MAX,
 } from '#/lib/mercator'
+import { geoToShapes } from '#/lib/geoToShape'
 import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
 import type { County } from '#/types/county'
 
@@ -78,7 +87,7 @@ function clamp(v: number, min: number, max: number): number {
 }
 
 export function useThreeScene(options: UseThreeSceneOptions) {
-  const { canvasRef, geoData } = options
+  const { canvasRef, geoData, islandsData, counties } = options
 
   const mouseRef = useRef(new Vector2(0.5, 0.5))
   const targetMouseRef = useRef(new Vector2(0.5, 0.5))
@@ -224,6 +233,85 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     terrainMesh.position.set(DEM_CENTER_X, DEM_CENTER_Y, 0.01)
     terrainMesh.renderOrder = 1
     scene.add(terrainMesh)
+
+    // --- Background Landmasses ---
+    const landmassGroup = new Group()
+    landmassGroup.renderOrder = 2
+    if (islandsData) {
+      for (const feature of islandsData.features) {
+        const shapes = geoToShapes(feature.geometry)
+        for (const shape of shapes) {
+          const geom = new ShapeGeometry(shape)
+          const mat = new MeshBasicMaterial({
+            color: new Color(180 / 255, 170 / 255, 155 / 255),
+            transparent: true,
+            opacity: 0.3,
+            depthWrite: false,
+          })
+          const mesh = new Mesh(geom, mat)
+          mesh.renderOrder = 2
+          landmassGroup.add(mesh)
+        }
+      }
+    }
+    scene.add(landmassGroup)
+
+    // --- County Fills ---
+    const countyFillGroup = new Group()
+    countyFillGroup.renderOrder = 3
+
+    for (const feature of geoData.features) {
+      const countyId = feature.properties.id
+      const shapes = geoToShapes(feature.geometry)
+
+      for (const shape of shapes) {
+        const geom = new ShapeGeometry(shape)
+        const mat = new MeshStandardMaterial({
+          color: new Color(0, 0, 0),
+          transparent: true,
+          opacity: 0,
+          depthWrite: false,
+          emissive: new Color(0, 0, 0),
+          emissiveIntensity: 0,
+        })
+        const mesh = new Mesh(geom, mat)
+        mesh.renderOrder = 3
+        mesh.userData = { countyId, countyName: feature.properties.name }
+        countyFillGroup.add(mesh)
+      }
+    }
+    scene.add(countyFillGroup)
+
+    // --- County Borders ---
+    const countyBorderGroup = new Group()
+    countyBorderGroup.renderOrder = 4
+
+    for (const feature of geoData.features) {
+      const countyId = feature.properties.id
+      const county = counties.find((c) => c.id === countyId)
+      const isReleased = county?.status === 'released'
+      const shapes = geoToShapes(feature.geometry)
+
+      for (const shape of shapes) {
+        const fillGeom = new ShapeGeometry(shape)
+        const edges = new EdgesGeometry(fillGeom)
+        const borderColor = isReleased
+          ? new Color(180 / 255, 150 / 255, 60 / 255)
+          : new Color(60 / 255, 50 / 255, 40 / 255)
+        const lineMat = new LineBasicMaterial({
+          color: borderColor,
+          transparent: true,
+          opacity: isReleased ? 0.6 : 0.4,
+          depthWrite: false,
+        })
+        const lineSegments = new LineSegments(edges, lineMat)
+        lineSegments.renderOrder = 4
+        lineSegments.userData = { countyId }
+        countyBorderGroup.add(lineSegments)
+        fillGeom.dispose()
+      }
+    }
+    scene.add(countyBorderGroup)
 
     // --- Post-Processing ---
     const composer = new EffectComposer(renderer)
@@ -462,6 +550,24 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       canvas.removeEventListener('touchstart', handleTouchStart)
       canvas.removeEventListener('touchmove', handleTouchMove)
       canvas.removeEventListener('touchend', handleTouchEnd)
+      countyFillGroup.traverse((child) => {
+        if (child instanceof Mesh) {
+          child.geometry.dispose()
+          ;(child.material as MeshStandardMaterial).dispose()
+        }
+      })
+      countyBorderGroup.traverse((child) => {
+        if (child instanceof LineSegments) {
+          child.geometry.dispose()
+          ;(child.material as LineBasicMaterial).dispose()
+        }
+      })
+      landmassGroup.traverse((child) => {
+        if (child instanceof Mesh) {
+          child.geometry.dispose()
+          ;(child.material as MeshBasicMaterial).dispose()
+        }
+      })
       clockRef.current = null
       renderer.dispose()
       composer.dispose()
@@ -470,7 +576,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       terrainMaterial.dispose()
       waterMaterial.dispose()
     }
-  }, [canvasRef, geoData])
+  }, [canvasRef, geoData, islandsData, counties])
 
   return { zoomIn, zoomOut, resetView, flyTo }
 }
