@@ -73,8 +73,8 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
               Explore the counties
             </span>
           </Link>
-          <a
-            href="/imprint"
+          <Link
+            to="/imprint"
             onClick={onClose}
             className="display-title rounded-lg border-l-[3px] border-transparent px-4 py-3 text-base text-[var(--ink-soft)] no-underline transition hover:border-[var(--gold-line)] hover:bg-[var(--parchment-dark)]"
           >
@@ -82,9 +82,9 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
             <span className="block text-[11px] font-normal italic text-[var(--ink-soft)]">
               Legal information
             </span>
-          </a>
-          <a
-            href="/privacy"
+          </Link>
+          <Link
+            to="/privacy"
             onClick={onClose}
             className="display-title rounded-lg border-l-[3px] border-transparent px-4 py-3 text-base text-[var(--ink-soft)] no-underline transition hover:border-[var(--gold-line)] hover:bg-[var(--parchment-dark)]"
           >
@@ -92,9 +92,9 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
             <span className="block text-[11px] font-normal italic text-[var(--ink-soft)]">
               Data protection
             </span>
-          </a>
-          <a
-            href="/sources"
+          </Link>
+          <Link
+            to="/sources"
             onClick={onClose}
             className="display-title rounded-lg border-l-[3px] border-transparent px-4 py-3 text-base text-[var(--ink-soft)] no-underline transition hover:border-[var(--gold-line)] hover:bg-[var(--parchment-dark)]"
           >
@@ -102,7 +102,7 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
             <span className="block text-[11px] font-normal italic text-[var(--ink-soft)]">
               Data attribution
             </span>
-          </a>
+          </Link>
         </div>
 
         <div className="border-t border-[var(--line)] px-4 py-3">

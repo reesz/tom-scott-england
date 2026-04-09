@@ -160,6 +160,13 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     flyTo(-1.5, 53.0, INITIAL_HALF_H)
   }, [flyTo])
 
+  // Listen for header-triggered reset
+  useEffect(() => {
+    const handler = () => resetView()
+    window.addEventListener('map:reset-view', handler)
+    return () => window.removeEventListener('map:reset-view', handler)
+  }, [resetView])
+
   useEffect(() => {
     const prev = selectedIdRef.current
     selectedIdRef.current = options.selectedId

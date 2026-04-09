@@ -13,7 +13,7 @@ export function MapContainer({ canvasRef, zoomIn, zoomOut, resetView }: MapConta
     <div className="fixed inset-0">
       <canvas
         ref={canvasRef}
-        className="h-full w-full touch-none"
+        className="h-full w-full touch-none bg-[var(--parchment)]"
       />
       <MapControls onZoomIn={zoomIn} onZoomOut={zoomOut} onReset={resetView} />
     </div>

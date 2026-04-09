@@ -1,10 +1,19 @@
 import { useState, useCallback } from 'react'
+import { Link, useRouter } from '@tanstack/react-router'
 import { MenuOverlay } from './MenuOverlay'
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
   const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const router = useRouter()
+
+  const handleTitleClick = useCallback(() => {
+    const isHome = router.state.location.pathname === '/'
+    if (isHome) {
+      window.dispatchEvent(new CustomEvent('map:reset-view'))
+    }
+  }, [router])
 
   return (
     <>
@@ -25,20 +34,22 @@ export function Header() {
           </svg>
         </button>
 
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.2">
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-          <path d="M12 8l2 4-2 4-2-4z" fill="rgba(180,140,60,0.4)" />
-        </svg>
+        <Link to="/" search={{}} className="flex items-center gap-2.5 no-underline" onClick={handleTitleClick}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+            <path d="M12 8l2 4-2 4-2-4z" fill="rgba(180,140,60,0.4)" />
+          </svg>
 
-        <div>
-          <div className="display-title text-[15px] font-bold leading-tight text-[var(--ink)]">
-            Every County
+          <div>
+            <div className="display-title text-[15px] font-bold leading-tight text-[var(--ink)]">
+              Every County
+            </div>
+            <div className="text-[8px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
+              A Cartographic Journey
+            </div>
           </div>
-          <div className="text-[8px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
-            A Cartographic Journey
-          </div>
-        </div>
+        </Link>
       </div>
 
       <MenuOverlay isOpen={menuOpen} onClose={closeMenu} />

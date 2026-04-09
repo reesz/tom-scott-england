@@ -213,7 +213,7 @@ body {
   margin: 0;
   color: var(--ink);
   font-family: var(--font-sans);
-  background-color: #f4e8c1; /* fallback parchment if WebGL fails */
+  background-color: var(--parchment);
   overflow: hidden; /* map is full-viewport */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
