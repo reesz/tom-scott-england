@@ -6,9 +6,10 @@ import type { County } from '#/types/county'
 interface CountyMiniMapProps {
   feature: CountyFeature
   county: County
+  hoveredLandmarkId?: string | null
 }
 
-export function CountyMiniMap({ feature, county }: CountyMiniMapProps) {
+export function CountyMiniMap({ feature, county, hoveredLandmarkId }: CountyMiniMapProps) {
   const size = 200
 
   const { pathD, townPos, landmarkPositions } = useMemo(() => {
@@ -29,7 +30,11 @@ export function CountyMiniMap({ feature, county }: CountyMiniMapProps) {
   }, [feature, county])
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[200px]">
+    <svg
+      viewBox={`0 0 ${size} ${size}`}
+      className="mx-auto w-full max-w-[200px] rounded-md border border-[var(--gold-line)] bg-[var(--parchment)]"
+      style={{ padding: '8px' }}
+    >
       <path
         d={pathD}
         fill="rgba(79, 140, 100, 0.15)"
@@ -40,12 +45,12 @@ export function CountyMiniMap({ feature, county }: CountyMiniMapProps) {
 
       {townPos && (
         <g>
-          <circle cx={townPos[0]} cy={townPos[1]} r={4} fill="var(--lagoon-deep)" stroke="white" strokeWidth={1.5} />
+          <circle cx={townPos[0]} cy={townPos[1]} r={4} fill="var(--gold)" stroke="white" strokeWidth={1.5} />
           <text
             x={townPos[0]}
             y={(townPos[1] ?? 0) - 8}
             textAnchor="middle"
-            style={{ fontSize: '8px', fill: 'var(--sea-ink)', fontWeight: 600 }}
+            style={{ fontSize: '8px', fill: 'var(--ink)', fontWeight: 600 }}
           >
             {county.countyTown?.name}
           </text>
@@ -56,7 +61,16 @@ export function CountyMiniMap({ feature, county }: CountyMiniMapProps) {
         (lm) =>
           lm.pos && (
             <g key={lm.name}>
-              <circle cx={lm.pos[0]} cy={lm.pos[1]} r={2.5} fill="var(--palm)" opacity={0.7} />
+              <circle
+                cx={lm.pos[0]}
+                cy={lm.pos[1]}
+                r={hoveredLandmarkId === lm.name ? 4 : 2.5}
+                fill={hoveredLandmarkId === lm.name ? 'var(--gold)' : 'var(--green-released)'}
+                opacity={hoveredLandmarkId === lm.name ? 1 : 0.4}
+                stroke={hoveredLandmarkId === lm.name ? 'var(--ink)' : 'none'}
+                strokeWidth={hoveredLandmarkId === lm.name ? 1 : 0}
+                style={{ transition: 'all 0.15s ease' }}
+              />
               <title>{lm.name}</title>
             </g>
           )
