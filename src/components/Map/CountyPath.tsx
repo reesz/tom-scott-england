@@ -21,8 +21,8 @@ export function CountyPath({
   isSelected,
 }: CountyPathProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const prefersReducedMotion = typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const prefersReducedMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const isReleased = county?.status === 'released'
   const isUpcoming = county?.status === 'upcoming'
 
@@ -40,28 +40,23 @@ export function CountyPath({
     onSelect(featureId)
   }, [featureId, onSelect])
 
-  // Fill colors
-  let fill = 'rgba(150, 150, 140, 0.12)' // default unknown
-  if (isReleased) fill = 'rgba(79, 140, 100, 0.22)'
-  if (isUpcoming) fill = 'url(#hatch)' // hatching pattern for uncharted territory
-  if (isHovered) fill = isReleased ? 'rgba(79, 184, 120, 0.35)' : 'rgba(180, 180, 170, 0.25)'
-  if (isSelected) fill = isReleased ? 'rgba(79, 184, 120, 0.45)' : 'rgba(180, 180, 170, 0.35)'
+  // Transparent fills — terrain shows through
+  let fill = 'transparent'
+  if (isHovered) fill = 'rgba(255, 255, 255, 0.15)'
+  if (isSelected) fill = 'rgba(255, 255, 255, 0.2)'
 
-  // Stroke
-  const strokeColor = isHovered || isSelected ? 'rgba(90, 74, 58, 0.9)' : 'rgba(90, 74, 58, 0.5)'
-  const strokeWidth = isHovered || isSelected ? 1.2 : 0.5
+  // Stroke styling — released gets gold accent
+  let strokeColor = 'rgba(60, 50, 40, 0.4)'
+  let strokeWidth = 0.8
+  if (isReleased) strokeColor = 'rgba(180, 150, 60, 0.6)'
+  if (isHovered || isSelected) {
+    strokeColor = isReleased ? 'rgba(200, 170, 60, 0.9)' : 'rgba(60, 50, 40, 0.8)'
+    strokeWidth = 1.4
+  }
 
-  // Hand-drawn dash animation on hover
-  const pathLength = 5000
-  const dashProps = isHovered && !prefersReducedMotion
-    ? {
-        strokeDasharray: pathLength,
-        strokeDashoffset: 0,
-        style: { transition: 'stroke-dashoffset 0.8s ease-in-out, fill 0.2s ease, stroke 0.2s ease' },
-      }
-    : {
-        style: { transition: prefersReducedMotion ? 'none' : 'fill 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease' },
-      }
+  const transition = prefersReducedMotion
+    ? 'none'
+    : 'fill 0.15s ease-in, stroke 0.15s ease-in, stroke-width 0.15s ease-in'
 
   return (
     <path
@@ -71,14 +66,16 @@ export function CountyPath({
       strokeWidth={strokeWidth}
       strokeLinejoin="round"
       className="cursor-pointer"
+      style={{ transition }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       role="button"
       tabIndex={0}
       aria-label={`${featureName}${isReleased ? ' — video available' : isUpcoming ? ' — coming soon' : ''}`}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick() }}
-      {...dashProps}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') handleClick()
+      }}
     />
   )
 }

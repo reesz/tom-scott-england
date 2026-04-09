@@ -1,10 +1,12 @@
 import type { GeoPath, GeoPermissibleObjects } from 'd3-geo'
 import type { County } from '#/types/county'
-import type { CountyFeatureCollection } from '#/hooks/useGeoData'
+import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
 import { CountyPath } from './CountyPath'
+import { BackgroundLandmasses } from './BackgroundLandmasses'
 
 interface CountySVGProps {
   geoData: CountyFeatureCollection
+  islandsData: IslandFeatureCollection | null
   pathGenerator: GeoPath<unknown, GeoPermissibleObjects>
   counties: County[]
   selectedId: string | null
@@ -16,6 +18,7 @@ interface CountySVGProps {
 
 export function CountySVG({
   geoData,
+  islandsData,
   pathGenerator,
   counties,
   selectedId,
@@ -31,11 +34,9 @@ export function CountySVG({
       style={{ zIndex: 1 }}
       preserveAspectRatio="xMidYMid meet"
     >
-      <defs>
-        <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="6" stroke="rgba(90, 74, 58, 0.15)" strokeWidth="1" />
-        </pattern>
-      </defs>
+      {islandsData && (
+        <BackgroundLandmasses islandsData={islandsData} pathGenerator={pathGenerator} />
+      )}
 
       {geoData.features.map((feature) => {
         const d = pathGenerator(feature)

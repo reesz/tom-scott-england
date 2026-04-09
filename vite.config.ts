@@ -9,6 +9,12 @@ import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
+  ssr: {
+    noExternal: ['three', 'postprocessing'],
+  },
+  optimizeDeps: {
+    include: ['three', 'postprocessing', 'use-sync-external-store/shim/with-selector'],
+  },
   plugins: [
     {
       name: 'glsl-loader',

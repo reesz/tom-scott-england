@@ -9,19 +9,33 @@ export interface CountyFeatureProperties {
 export type CountyFeature = GeoJSON.Feature<Polygon | MultiPolygon, CountyFeatureProperties>
 export type CountyFeatureCollection = FeatureCollection<Polygon | MultiPolygon, CountyFeatureProperties>
 
+export interface IslandFeatureProperties {
+  id: string
+  name: string
+}
+
+export type IslandFeatureCollection = FeatureCollection<Polygon | MultiPolygon, IslandFeatureProperties>
+
 export function useGeoData() {
   const [geoData, setGeoData] = useState<CountyFeatureCollection | null>(null)
+  const [islandsData, setIslandsData] = useState<IslandFeatureCollection | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/data/england-counties.geo.json')
-      .then((res) => {
-        if (!res.ok) throw new Error(`Failed to load GeoJSON: ${res.status}`)
+    Promise.all([
+      fetch('/data/england-counties.geo.json').then((res) => {
+        if (!res.ok) throw new Error(`Failed to load counties GeoJSON: ${res.status}`)
         return res.json() as Promise<CountyFeatureCollection>
-      })
-      .then((data) => {
-        setGeoData(data)
+      }),
+      fetch('/data/british-isles.geo.json').then((res) => {
+        if (!res.ok) throw new Error(`Failed to load British Isles GeoJSON: ${res.status}`)
+        return res.json() as Promise<IslandFeatureCollection>
+      }),
+    ])
+      .then(([counties, islands]) => {
+        setGeoData(counties)
+        setIslandsData(islands)
         setLoading(false)
       })
       .catch((err) => {
@@ -30,5 +44,5 @@ export function useGeoData() {
       })
   }, [])
 
-  return { geoData, loading, error }
+  return { geoData, islandsData, loading, error }
 }

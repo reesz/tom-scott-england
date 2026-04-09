@@ -37,8 +37,12 @@ export function CountyLabels({ geoData, projection, width, height }: CountyLabel
             style={{
               fontFamily: "'Fraunces', Georgia, serif",
               fontSize: '5px',
-              fill: 'rgba(90, 74, 58, 0.7)',
+              fill: 'rgba(60, 50, 40, 0.85)',
               letterSpacing: '0.05em',
+              paintOrder: 'stroke',
+              stroke: 'rgba(255, 255, 255, 0.6)',
+              strokeWidth: '1.5px',
+              strokeLinejoin: 'round',
             }}
           >
             {feature.properties.name}

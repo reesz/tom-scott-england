@@ -9,38 +9,82 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ImprintRouteImport } from './routes/imprint'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CountyIdRouteImport } from './routes/county.$id'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImprintRoute = ImprintRouteImport.update({
+  id: '/imprint',
+  path: '/imprint',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CountyIdRoute = CountyIdRouteImport.update({
+  id: '/county/$id',
+  path: '/county/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/imprint': typeof ImprintRoute
+  '/privacy': typeof PrivacyRoute
+  '/county/$id': typeof CountyIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/imprint': typeof ImprintRoute
+  '/privacy': typeof PrivacyRoute
+  '/county/$id': typeof CountyIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/imprint': typeof ImprintRoute
+  '/privacy': typeof PrivacyRoute
+  '/county/$id': typeof CountyIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/imprint' | '/privacy' | '/county/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/imprint' | '/privacy' | '/county/$id'
+  id: '__root__' | '/' | '/imprint' | '/privacy' | '/county/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ImprintRoute: typeof ImprintRoute
+  PrivacyRoute: typeof PrivacyRoute
+  CountyIdRoute: typeof CountyIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/imprint': {
+      id: '/imprint'
+      path: '/imprint'
+      fullPath: '/imprint'
+      preLoaderRoute: typeof ImprintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +92,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/county/$id': {
+      id: '/county/$id'
+      path: '/county/$id'
+      fullPath: '/county/$id'
+      preLoaderRoute: typeof CountyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ImprintRoute: ImprintRoute,
+  PrivacyRoute: PrivacyRoute,
+  CountyIdRoute: CountyIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
