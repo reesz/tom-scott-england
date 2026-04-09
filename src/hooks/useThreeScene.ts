@@ -459,19 +459,12 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       const boundsH = maxY - minY
       countyWorldBounds.set(countyId, { width: boundsW, height: boundsH })
 
-      // Scale text to fit within county width
-      // At default label scale, canvas width 512 maps to labelAspect * labelScale world units
-      // We want text to not exceed ~80% of county world width
-      const maxTextWidth = Math.min(460, (boundsW / (0.012 * 4)) * 512 * 0.8)
-
       const [lon, lat] = geoCentroid(feature)
       const [wx, wy] = geoToWorld(lon, lat)
 
-      const sprite = createLabelSprite(name, maxTextWidth)
-      const labelScale = 0.012
-      sprite.scale.set(labelScale * 4, labelScale, 1)
+      const sprite = createLabelSprite(name)
       sprite.position.set(wx, wy, 0.01)
-      sprite.userData = { countyId }
+      sprite.userData = { countyId, boundsW }
       labelGroup.add(sprite)
     }
     scene.add(labelGroup)
@@ -552,6 +545,33 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     // --- Clock ---
     const clock = new Clock()
     clockRef.current = clock
+
+    // --- Initial fly-to if a county is already selected ---
+    if (selectedIdRef.current && geoData) {
+      const feature = geoData.features.find((f) => f.properties.id === selectedIdRef.current)
+      if (feature) {
+        const [lon, lat] = geoCentroid(feature)
+        const [wx, wy] = geoToWorld(lon, lat)
+        const targetHalfH = clamp(0.04, MIN_HALF_H, MAX_HALF_H)
+        let panelOffsetWorld = 0
+        if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+          const panelPx = window.innerWidth >= 1024 ? 400 : 320
+          const pixelToWorld = (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
+          panelOffsetWorld = (panelPx / 2) * pixelToWorld
+        }
+        flyToRef.current = {
+          centerX: wx + panelOffsetWorld,
+          centerY: wy,
+          halfH: targetHalfH,
+          startCenterX: centerRef.current[0],
+          startCenterY: centerRef.current[1],
+          startHalfH: halfHRef.current,
+          startTime: clock.getElapsedTime(),
+          duration: 1.2,
+        }
+        updateCountyMaterials()
+      }
+    }
 
     // --- Mouse tracking ---
     const handleMouse = (e: MouseEvent) => {
@@ -644,10 +664,12 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           const elapsed = clockRef.current?.getElapsedTime() ?? 0
 
           // Offset for panel: shift camera right so county appears centered in remaining viewport
+          // Use the TARGET frustum size (not current) since we'll be zoomed in when animation ends
+          const targetHalfH = clamp(0.04, MIN_HALF_H, MAX_HALF_H)
           let panelOffsetWorld = 0
           if (typeof window !== 'undefined' && window.innerWidth >= 768) {
             const panelPx = window.innerWidth >= 1024 ? 400 : 320
-            const pixelToWorld = (halfHRef.current * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
+            const pixelToWorld = (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
             panelOffsetWorld = (panelPx / 2) * pixelToWorld
           }
 
@@ -865,26 +887,42 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       for (const mat of borderLineMaterials) mat.linewidth = borderWidth
       for (const mat of highlightLineMaterials) mat.linewidth = borderWidth
 
-      // --- Update label scale and visibility based on zoom ---
+      // --- Update label visibility and scale (only hovered/selected) ---
       const frustumWidth = camera.right - camera.left
-      const MIN_SCREEN_FRACTION = 0.06
-      // Scale labels inversely with zoom so they stay constant screen size
-      const labelWorldScale = frustumWidth * 0.04 // ~4% of viewport width per label
-      const labelAspect = 4 // 512:128 canvas aspect
+      const LABEL_ASPECT = 4 // 512:128 canvas aspect
 
       for (const child of labelGroup.children) {
-        const cId = child.userData.countyId
+        const sprite = child as Sprite
+        const cId = sprite.userData.countyId
         const bounds = countyWorldBounds.get(cId)
         if (!bounds) continue
 
-        const screenFraction = bounds.width / frustumWidth
-        const targetOpacity = screenFraction > MIN_SCREEN_FRACTION ? 1 : 0
-        const mat = (child as Sprite).material as SpriteMaterial
-        mat.opacity += (targetOpacity - mat.opacity) * 0.1
+        const isActive = cId === selectedIdRef.current || cId === hoveredCountyId
+        const mat = sprite.material as SpriteMaterial
+
+        // Target opacity: 1 for hovered/selected, 0 for others
+        const targetOpacity = isActive ? 1 : 0
+        mat.opacity += (targetOpacity - mat.opacity) * 0.12
         mat.visible = mat.opacity > 0.01
 
-        // Inverse scale: labels stay same screen size at all zoom levels
-        ;(child as Sprite).scale.set(labelWorldScale * labelAspect, labelWorldScale, 1)
+        // Size label to fit within county bounds
+        const textRatio = sprite.userData.textWidthRatio || 0.5
+        const maxHeightFromWidth = (bounds.width * 0.85) / (LABEL_ASPECT * textRatio)
+        const maxHeightFromHeight = bounds.height * 0.3
+        const fitHeight = Math.min(maxHeightFromWidth, maxHeightFromHeight)
+        const MIN_LABEL_WORLD = frustumWidth * 0.025
+        const MAX_LABEL_WORLD = frustumWidth * 0.06
+        const labelHeight = Math.max(MIN_LABEL_WORLD, Math.min(MAX_LABEL_WORLD, fitHeight))
+
+        // Animate: fade in + slide up
+        const progress = mat.opacity
+        const animatedHeight = labelHeight * (0.85 + 0.15 * progress)
+        sprite.scale.set(animatedHeight * LABEL_ASPECT, animatedHeight, 1)
+
+        // Slide up from slightly below centroid
+        const baseY = sprite.userData.baseY ?? sprite.position.y
+        if (!sprite.userData.baseY) sprite.userData.baseY = sprite.position.y
+        sprite.position.y = baseY + labelHeight * 0.15 * (1 - progress)
       }
 
       // --- Lerp county fill colors toward targets (multiply blend) ---

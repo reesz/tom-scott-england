@@ -2,19 +2,14 @@ import { Sprite, SpriteMaterial, CanvasTexture, LinearFilter } from 'three'
 
 const CANVAS_WIDTH = 512
 const CANVAS_HEIGHT = 128
+const FONT_SIZE = 48
 const FONT_FAMILY = "'Fraunces', Georgia, serif"
-const MAX_FONT_SIZE = 48
-const MIN_FONT_SIZE = 16
 
 /**
- * Create a Sprite with a canvas-rendered label.
- * Font size is auto-fitted so the text never exceeds the given
- * maxTextWidth (in canvas pixels at 1x, before retina scaling).
+ * Create a Sprite with a canvas-rendered label at max resolution.
+ * Sizing is handled dynamically in the render loop.
  */
-export function createLabelSprite(
-  name: string,
-  maxTextWidth: number = CANVAS_WIDTH * 0.9,
-): Sprite {
+export function createLabelSprite(name: string): Sprite {
   const canvas = document.createElement('canvas')
   canvas.width = CANVAS_WIDTH * 2 // 2x for retina
   canvas.height = CANVAS_HEIGHT * 2
@@ -22,27 +17,19 @@ export function createLabelSprite(
 
   ctx.scale(2, 2)
 
-  // Find the largest font size that fits within maxTextWidth
-  let fontSize = MAX_FONT_SIZE
-  ctx.font = `${fontSize}px ${FONT_FAMILY}`
-  let measured = ctx.measureText(name).width
-
-  while (measured > maxTextWidth && fontSize > MIN_FONT_SIZE) {
-    fontSize -= 2
-    ctx.font = `${fontSize}px ${FONT_FAMILY}`
-    measured = ctx.measureText(name).width
-  }
+  ctx.font = `${FONT_SIZE}px ${FONT_FAMILY}`
+  const measured = ctx.measureText(name).width
 
   // Dark text shadow for readability
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
-  ctx.shadowBlur = 3
-  ctx.shadowOffsetX = 1
-  ctx.shadowOffsetY = 1
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)'
+  ctx.shadowBlur = 10
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 4
 
-  // Draw text — off-black
+  // Draw text — white
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'rgba(25, 22, 18, 0.9)'
+  ctx.fillStyle = '#ffffff'
   ctx.fillText(name, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
 
   const texture = new CanvasTexture(canvas)
@@ -58,6 +45,8 @@ export function createLabelSprite(
 
   const sprite = new Sprite(material)
   sprite.name = `label-${name}`
+  // Store the text width ratio (how much of the canvas the text fills)
+  sprite.userData.textWidthRatio = measured / CANVAS_WIDTH
 
   return sprite
 }
