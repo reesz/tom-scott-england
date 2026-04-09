@@ -48,21 +48,14 @@ float snoise(vec2 v) {
 
 // --- Hypsometric color scale ---
 vec3 terrainColor(float h) {
-  // More saturated, vivid palette for strong relief rendering
-  // 0m: deep rich green
-  vec3 c0 = vec3(0.22, 0.45, 0.28);
-  // 50m: vibrant mid green
-  vec3 c1 = vec3(0.35, 0.58, 0.30);
-  // 150m: yellow-green
-  vec3 c2 = vec3(0.58, 0.72, 0.32);
-  // 300m: warm tan/ochre
-  vec3 c3 = vec3(0.75, 0.62, 0.28);
-  // 500m: rich brown
-  vec3 c4 = vec3(0.60, 0.40, 0.22);
-  // 800m+: dark purple-brown
-  vec3 c5 = vec3(0.45, 0.28, 0.35);
-  // Peaks: cool grey
-  vec3 c6 = vec3(0.78, 0.76, 0.74);
+  // Saturated palette — rich greens through warm ochre to cool peaks
+  vec3 c0 = vec3(0.18, 0.42, 0.22);  // 0m: deep forest green
+  vec3 c1 = vec3(0.28, 0.55, 0.24);  // 50m: rich mid green
+  vec3 c2 = vec3(0.50, 0.68, 0.26);  // 150m: vivid yellow-green
+  vec3 c3 = vec3(0.72, 0.58, 0.22);  // 300m: warm ochre
+  vec3 c4 = vec3(0.55, 0.35, 0.18);  // 500m: deep brown
+  vec3 c5 = vec3(0.42, 0.25, 0.32);  // 800m+: dark purple-brown
+  vec3 c6 = vec3(0.72, 0.70, 0.68);  // Peaks: cool grey
 
   // Elevation stops normalized to 0-1 (max ~1345m)
   if (h < 0.037) return mix(c0, c1, h / 0.037);
@@ -90,23 +83,20 @@ float hillshade(vec2 uv, vec2 texelSize) {
   vec3 lightDir = normalize(vec3(-0.5, 0.5, 0.707));
   float shade = dot(normal, lightDir);
 
-  // Strong ambient floor, wide range for dramatic relief
-  return mix(0.3, 1.2, shade * 0.5 + 0.5);
+  // Deeper shadows, brighter highlights for punchy relief
+  return mix(0.2, 1.3, shade * 0.5 + 0.5);
 }
 
 void main() {
   // Remap screen UV to DEM texture space
   vec2 demUV = remapUV(v_uv);
 
-  // Discard fragments outside valid DEM range
-  if (demUV.x < 0.0 || demUV.x > 1.0 || demUV.y < 0.0 || demUV.y > 1.0) discard;
-
   // Parallax offset based on mouse + elevation
-  vec2 mouseOffset = (u_mouse - 0.5) * 2.0;
+  vec2 mouseOffset = (u_mouse - 0.5) * vec2(2.0, -2.0);
   float elevation = texture2D(u_dem, demUV).r;
 
   // Higher terrain shifts more for parallax depth
-  vec2 parallax = mouseOffset * elevation * 0.015;
+  vec2 parallax = mouseOffset * elevation * 0.0075;
   vec2 uv = clamp(demUV + parallax, 0.0, 1.0);
 
   float h = texture2D(u_dem, uv).r;

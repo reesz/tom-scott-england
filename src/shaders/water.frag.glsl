@@ -4,6 +4,7 @@ varying vec2 v_uv;
 
 uniform sampler2D u_mask;
 uniform float u_time;
+uniform vec2 u_mouse;
 uniform vec2 u_resolution;
 uniform vec4 u_demUV; // x=uMin, y=vMin, z=uMax, w=vMax
 
@@ -45,10 +46,9 @@ float snoise(vec2 v) {
 void main() {
   vec2 demUV = remapUV(v_uv);
 
-  // Discard fragments outside valid DEM range
-  if (demUV.x < 0.0 || demUV.x > 1.0 || demUV.y < 0.0 || demUV.y > 1.0) discard;
-
-  float mask = texture2D(u_mask, demUV).r;
+  // Outside DEM range = deep ocean (mask 0.0), no discard
+  bool outsideDEM = demUV.x < 0.0 || demUV.x > 1.0 || demUV.y < 0.0 || demUV.y > 1.0;
+  float mask = outsideDEM ? 0.0 : texture2D(u_mask, clamp(demUV, 0.0, 1.0)).r;
 
   // Water only where mask < 0.5 (ocean)
   float waterAlpha = smoothstep(0.5, 0.1, mask);
@@ -58,9 +58,9 @@ void main() {
   float coastDist = 1.0 - smoothstep(0.0, 0.4, mask);
 
   // Water colors
-  vec3 coastColor = vec3(0.537, 0.722, 0.769); // #89b8c4
-  vec3 midColor   = vec3(0.290, 0.478, 0.541); // #4a7a8a
-  vec3 deepColor  = vec3(0.165, 0.290, 0.353); // #2a4a5a
+  vec3 coastColor = vec3(0.45, 0.68, 0.75);  // brighter teal coast
+  vec3 midColor   = vec3(0.22, 0.44, 0.54);  // richer mid blue
+  vec3 deepColor  = vec3(0.12, 0.24, 0.34);  // deeper ocean
 
   // Depth gradient
   vec3 baseColor = mix(coastColor, midColor, smoothstep(0.0, 0.5, coastDist));
@@ -75,14 +75,19 @@ void main() {
   // Ripple influence on color
   baseColor += ripples * 0.04;
 
-  // Fresnel-like sheen on ripple peaks
-  float sheen = smoothstep(0.65, 0.85, ripples);
+  // Fresnel-like sheen on ripple peaks — slowly drifts over time
+  float sheenShift = snoise(v_uv * 12.0 + u_time * 0.02) * 0.08;
+  float sheen = smoothstep(0.65 + sheenShift, 0.85 + sheenShift, ripples);
   baseColor += sheen * 0.08;
+
+  // Subtle parallax offset for foam — mouse shifts the foam pattern slightly
+  vec2 mouseOffset = (u_mouse - 0.5) * vec2(1.0, -1.0);
+  vec2 foamUV = v_uv + mouseOffset * 0.004;
 
   // Shore foam
   float foamZone = smoothstep(0.4, 0.15, mask) * smoothstep(0.0, 0.1, mask);
-  float foamNoise = snoise(v_uv * 80.0 + vec2(u_time * 0.1, 0.0)) * 0.5 + 0.5;
-  float foamPulse = sin(u_time * 1.5) * 0.3 + 0.7;
+  float foamNoise = snoise(foamUV * 80.0 + vec2(u_time * 0.06, u_time * 0.02)) * 0.5 + 0.5;
+  float foamPulse = sin(u_time * 0.8) * 0.2 + 0.8;
   float foam = foamZone * smoothstep(0.3, 0.7, foamNoise) * foamPulse;
   baseColor = mix(baseColor, vec3(1.0), foam * 0.3);
 

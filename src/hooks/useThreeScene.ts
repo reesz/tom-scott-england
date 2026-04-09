@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import {
   WebGLRenderer,
   Scene,
@@ -12,7 +12,6 @@ import {
   Clock,
   Vector2,
   Vector4,
-  MultiplyBlending,
   type Texture,
 } from 'three'
 import {
@@ -21,72 +20,119 @@ import {
   EffectPass,
   BloomEffect,
   VignetteEffect,
-  NoiseEffect,
 } from 'postprocessing'
 import terrainVertSrc from '#/shaders/terrain.vert.glsl'
 import terrainFragSrc from '#/shaders/terrain.frag.glsl'
 import waterVertSrc from '#/shaders/water.vert.glsl'
 import waterFragSrc from '#/shaders/water.frag.glsl'
-import paperFragSrc from '#/shaders/paper.frag.glsl'
-import type { GeoBounds } from '#/components/Map/ThreeBackground'
+import {
+  geoToWorld,
+  worldBoundsToDemUV,
+  DEM_WORLD_MIN,
+  DEM_WORLD_MAX,
+} from '#/lib/mercator'
+import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
+import type { County } from '#/types/county'
 
-// DEM bounding box (must match generate-dem-assets.py)
-const DEM_LON_MIN = -11
-const DEM_LON_MAX = 2
-const DEM_LAT_MIN = 49
-const DEM_LAT_MAX = 61
+// --- Constants ---
+const MIN_HALF_H = 0.02
+const MAX_HALF_H = 0.25
+const INITIAL_CENTER = geoToWorld(-1.5, 53.0)
+const INITIAL_HALF_H = 0.15
+const DEM_SIZE = 2048
+const WATER_QUAD_SIZE = 4.0
 
-function latToMercY(lat: number): number {
-  const rad = (lat * Math.PI) / 180
-  return Math.log(Math.tan(Math.PI / 4 + rad / 2))
+// DEM world-space extents
+const DEM_CENTER_X = (DEM_WORLD_MIN[0] + DEM_WORLD_MAX[0]) / 2
+const DEM_CENTER_Y = (DEM_WORLD_MIN[1] + DEM_WORLD_MAX[1]) / 2
+const DEM_WIDTH = DEM_WORLD_MAX[0] - DEM_WORLD_MIN[0]
+const DEM_HEIGHT = DEM_WORLD_MAX[1] - DEM_WORLD_MIN[1]
+
+export interface UseThreeSceneOptions {
+  canvasRef: React.RefObject<HTMLCanvasElement | null>
+  geoData: CountyFeatureCollection | null
+  islandsData: IslandFeatureCollection | null
+  counties: County[]
+  selectedId: string | null
+  onSelectCounty: (id: string) => void
+  onHoverCounty: (id: string | null) => void
 }
 
-// Convert geographic bounds to DEM UV space (0-1)
-// Returns [uMin, vMin, uMax, vMax]
-// Three.js textures with flipY=true (default): v=0 is south, v=1 is north
-// Screen v_uv: y=0 is bottom (south), y=1 is top (north)
-// So shader does: demUV = mix(demUVMin, demUVMax, v_uv) — direct mapping
-function geoBoundsToDemUV(bounds: GeoBounds): [number, number, number, number] {
-  const demMercYMin = latToMercY(DEM_LAT_MIN) // south
-  const demMercYMax = latToMercY(DEM_LAT_MAX) // north
-  const demMercRange = demMercYMax - demMercYMin
-
-  // Longitude → u (linear)
-  const uMin = (bounds.lonMin - DEM_LON_MIN) / (DEM_LON_MAX - DEM_LON_MIN)
-  const uMax = (bounds.lonMax - DEM_LON_MIN) / (DEM_LON_MAX - DEM_LON_MIN)
-
-  // Latitude → v (Mercator)
-  // v=0 maps to south (latMin), v=1 maps to north (latMax)
-  const vMin = (latToMercY(bounds.latMin) - demMercYMin) / demMercRange
-  const vMax = (latToMercY(bounds.latMax) - demMercYMin) / demMercRange
-
-  return [uMin, vMin, uMax, vMax]
+interface FlyToTarget {
+  centerX: number
+  centerY: number
+  halfH: number
+  startCenterX: number
+  startCenterY: number
+  startHalfH: number
+  startTime: number
+  duration: number
 }
 
-export function useThreeScene(
-  canvasRef: React.RefObject<HTMLCanvasElement | null>,
-  geoBounds: GeoBounds | null,
-) {
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v))
+}
+
+export function useThreeScene(options: UseThreeSceneOptions) {
+  const { canvasRef, geoData } = options
+
   const mouseRef = useRef(new Vector2(0.5, 0.5))
   const targetMouseRef = useRef(new Vector2(0.5, 0.5))
+  const clockRef = useRef<Clock | null>(null)
 
+  // Camera state stored in refs so callbacks can read/write without re-renders
+  const centerRef = useRef<[number, number]>([INITIAL_CENTER[0], INITIAL_CENTER[1]])
+  const halfHRef = useRef(INITIAL_HALF_H)
+  const flyToRef = useRef<FlyToTarget | null>(null)
+
+  // --- Public API callbacks ---
+  const flyTo = useCallback(
+    (lon: number, lat: number, targetHalfH?: number) => {
+      const [wx, wy] = geoToWorld(lon, lat)
+      const clock = clockRef.current
+      if (!clock) return
+      flyToRef.current = {
+        centerX: wx,
+        centerY: wy,
+        halfH: clamp(targetHalfH ?? 0.05, MIN_HALF_H, MAX_HALF_H),
+        startCenterX: centerRef.current[0],
+        startCenterY: centerRef.current[1],
+        startHalfH: halfHRef.current,
+        startTime: clock.getElapsedTime(),
+        duration: 1.0,
+      }
+    },
+    [],
+  )
+
+  const zoomIn = useCallback(() => {
+    halfHRef.current = clamp(halfHRef.current * 0.75, MIN_HALF_H, MAX_HALF_H)
+  }, [])
+
+  const zoomOut = useCallback(() => {
+    halfHRef.current = clamp(halfHRef.current / 0.75, MIN_HALF_H, MAX_HALF_H)
+  }, [])
+
+  const resetView = useCallback(() => {
+    flyTo(-1.5, 53.0, INITIAL_HALF_H)
+  }, [flyTo])
+
+  // --- Scene setup effect ---
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const isMobile = window.innerWidth < 768
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
     const dpr = isMobile
       ? Math.min(window.devicePixelRatio, 1)
       : Math.min(window.devicePixelRatio, 2)
-
-    // Compute DEM UV mapping from geographic bounds
-    // Default: show full DEM if no bounds provided
-    let demUV = new Vector4(0, 0, 1, 1)
-    if (geoBounds) {
-      const [uMin, vMin, uMax, vMax] = geoBoundsToDemUV(geoBounds)
-      demUV = new Vector4(uMin, vMin, uMax, vMax)
-    }
 
     // --- Renderer ---
     const renderer = new WebGLRenderer({
@@ -100,7 +146,18 @@ export function useThreeScene(
 
     // --- Scene & Camera ---
     const scene = new Scene()
-    const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 10)
+    const aspect = canvas.clientWidth / canvas.clientHeight
+    const halfH = halfHRef.current
+    const cx = centerRef.current[0]
+    const cy = centerRef.current[1]
+    const camera = new OrthographicCamera(
+      cx - halfH * aspect,
+      cx + halfH * aspect,
+      cy + halfH,
+      cy - halfH,
+      0,
+      10,
+    )
     camera.position.z = 5
 
     // --- Load Textures ---
@@ -121,27 +178,29 @@ export function useThreeScene(
         )
       })
 
-    const geo = new PlaneGeometry(2, 2)
-    const DEM_SIZE = 2048
-
-    // --- Water Material ---
+    // --- Water quad: oversized, follows camera ---
+    const waterGeo = new PlaneGeometry(WATER_QUAD_SIZE, WATER_QUAD_SIZE)
     const waterMaterial = new ShaderMaterial({
       vertexShader: waterVertSrc,
       fragmentShader: waterFragSrc,
       uniforms: {
         u_mask: { value: null },
         u_time: { value: 0 },
-        u_resolution: { value: new Vector2(canvas.clientWidth, canvas.clientHeight) },
-        u_demUV: { value: demUV },
+        u_mouse: { value: new Vector2(0.5, 0.5) },
+        u_resolution: {
+          value: new Vector2(canvas.clientWidth, canvas.clientHeight),
+        },
+        u_demUV: { value: new Vector4(0, 0, 1, 1) },
       },
       transparent: true,
       depthWrite: false,
     })
-    const waterMesh = new Mesh(geo, waterMaterial)
+    const waterMesh = new Mesh(waterGeo, waterMaterial)
     waterMesh.renderOrder = 0
     scene.add(waterMesh)
 
-    // --- Terrain Material ---
+    // --- Terrain quad: sized exactly to DEM world bounds ---
+    const terrainGeo = new PlaneGeometry(DEM_WIDTH, DEM_HEIGHT)
     const terrainMaterial = new ShaderMaterial({
       vertexShader: terrainVertSrc,
       fragmentShader: terrainFragSrc,
@@ -150,32 +209,21 @@ export function useThreeScene(
         u_mask: { value: null },
         u_mouse: { value: new Vector2(0.5, 0.5) },
         u_time: { value: 0 },
-        u_resolution: { value: new Vector2(canvas.clientWidth, canvas.clientHeight) },
-        u_demTexelSize: { value: new Vector2(1.0 / DEM_SIZE, 1.0 / DEM_SIZE) },
-        u_demUV: { value: demUV },
+        u_resolution: {
+          value: new Vector2(canvas.clientWidth, canvas.clientHeight),
+        },
+        u_demTexelSize: {
+          value: new Vector2(1.0 / DEM_SIZE, 1.0 / DEM_SIZE),
+        },
+        u_demUV: { value: new Vector4(0, 0, 1, 1) }, // 1:1 mapping
       },
       transparent: true,
       depthWrite: false,
     })
-    const terrainMesh = new Mesh(geo, terrainMaterial)
+    const terrainMesh = new Mesh(terrainGeo, terrainMaterial)
+    terrainMesh.position.set(DEM_CENTER_X, DEM_CENTER_Y, 0.01)
     terrainMesh.renderOrder = 1
     scene.add(terrainMesh)
-
-    // --- Paper Overlay Material ---
-    const paperMaterial = new ShaderMaterial({
-      vertexShader: terrainVertSrc,
-      fragmentShader: paperFragSrc,
-      uniforms: {
-        u_time: { value: 0 },
-        u_resolution: { value: new Vector2(canvas.clientWidth, canvas.clientHeight) },
-      },
-      transparent: true,
-      depthWrite: false,
-      blending: MultiplyBlending,
-    })
-    const paperMesh = new Mesh(geo, paperMaterial)
-    paperMesh.renderOrder = 2
-    scene.add(paperMesh)
 
     // --- Post-Processing ---
     const composer = new EffectComposer(renderer)
@@ -191,56 +239,144 @@ export function useThreeScene(
       composer.addPass(new EffectPass(camera, bloom))
     }
 
-    const noise = new NoiseEffect({ premultiply: true })
     const vignette = new VignetteEffect({
-      offset: 0.4,
-      darkness: 0.5,
+      offset: 0.45,
+      darkness: 0.35,
     })
-    composer.addPass(new EffectPass(camera, noise, vignette))
+    composer.addPass(new EffectPass(camera, vignette))
 
-    // --- Load textures then start rendering ---
+    // --- Load textures ---
+    Promise.all([
+      loadTex('/data/dem-heightmap.png'),
+      loadTex('/data/land-mask.png'),
+    ]).then(([demTex, maskTex]) => {
+      terrainMaterial.uniforms.u_dem.value = demTex
+      terrainMaterial.uniforms.u_mask.value = maskTex
+      waterMaterial.uniforms.u_mask.value = maskTex
+    })
+
+    // --- Clock ---
     const clock = new Clock()
-
-    Promise.all([loadTex('/data/dem-heightmap.png'), loadTex('/data/land-mask.png')]).then(
-      ([demTex, maskTex]) => {
-        terrainMaterial.uniforms.u_dem.value = demTex
-        terrainMaterial.uniforms.u_mask.value = maskTex
-        waterMaterial.uniforms.u_mask.value = maskTex
-      },
-    )
+    clockRef.current = clock
 
     // --- Mouse tracking ---
     const handleMouse = (e: MouseEvent) => {
-      targetMouseRef.current.set(e.clientX / window.innerWidth, e.clientY / window.innerHeight)
+      targetMouseRef.current.set(
+        e.clientX / window.innerWidth,
+        e.clientY / window.innerHeight,
+      )
     }
     if (!isMobile) {
       window.addEventListener('mousemove', handleMouse)
     }
 
-    // --- Render loop ---
-    let animFrameId = 0
+    // --- Pan state ---
+    let isPanning = false
+    let panStartX = 0
+    let panStartY = 0
 
-    const render = () => {
-      const elapsed = prefersReducedMotion ? 0 : clock.getElapsedTime()
-
-      // Smooth mouse lerp
-      if (!prefersReducedMotion && !isMobile) {
-        mouseRef.current.lerp(targetMouseRef.current, 0.05)
-      }
-
-      const mouse = mouseRef.current
-
-      // Update uniforms
-      terrainMaterial.uniforms.u_time.value = elapsed
-      terrainMaterial.uniforms.u_mouse.value.set(mouse.x, mouse.y)
-      waterMaterial.uniforms.u_time.value = elapsed
-      paperMaterial.uniforms.u_time.value = elapsed
-
-      composer.render()
-      animFrameId = requestAnimationFrame(render)
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return
+      isPanning = true
+      panStartX = e.clientX
+      panStartY = e.clientY
+      canvas.setPointerCapture(e.pointerId)
     }
 
-    render()
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isPanning) return
+      const dx = e.clientX - panStartX
+      const dy = e.clientY - panStartY
+      panStartX = e.clientX
+      panStartY = e.clientY
+
+      // Convert pixel deltas to world-space deltas
+      const currentHalfH = halfHRef.current
+      const currentAspect = canvas.clientWidth / canvas.clientHeight
+      const worldPerPixelX = (currentHalfH * 2 * currentAspect) / canvas.clientWidth
+      const worldPerPixelY = (currentHalfH * 2) / canvas.clientHeight
+
+      centerRef.current[0] -= dx * worldPerPixelX
+      centerRef.current[1] += dy * worldPerPixelY
+
+      // Cancel any ongoing fly-to
+      flyToRef.current = null
+    }
+
+    const handlePointerUp = () => {
+      isPanning = false
+    }
+
+    canvas.addEventListener('pointerdown', handlePointerDown)
+    canvas.addEventListener('pointermove', handlePointerMove)
+    canvas.addEventListener('pointerup', handlePointerUp)
+    canvas.addEventListener('pointercancel', handlePointerUp)
+
+    // --- Zoom: wheel ---
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const zoomFactor = e.deltaY > 0 ? 1.1 : 1 / 1.1
+      const oldHalfH = halfHRef.current
+      const newHalfH = clamp(oldHalfH * zoomFactor, MIN_HALF_H, MAX_HALF_H)
+
+      // Zoom toward pointer
+      const rect = canvas.getBoundingClientRect()
+      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1
+      const ndcY = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
+      const currentAspect = canvas.clientWidth / canvas.clientHeight
+
+      const worldX = centerRef.current[0] + ndcX * oldHalfH * currentAspect
+      const worldY = centerRef.current[1] + ndcY * oldHalfH
+
+      centerRef.current[0] = worldX - ndcX * newHalfH * currentAspect
+      centerRef.current[1] = worldY - ndcY * newHalfH
+
+      halfHRef.current = newHalfH
+
+      // Cancel any ongoing fly-to
+      flyToRef.current = null
+    }
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false })
+
+    // --- Touch: pinch zoom ---
+    let lastPinchDist = 0
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[1].clientX - e.touches[0].clientX
+        const dy = e.touches[1].clientY - e.touches[0].clientY
+        lastPinchDist = Math.sqrt(dx * dx + dy * dy)
+      }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault()
+        const dx = e.touches[1].clientX - e.touches[0].clientX
+        const dy = e.touches[1].clientY - e.touches[0].clientY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+
+        if (lastPinchDist > 0) {
+          const scale = lastPinchDist / dist
+          halfHRef.current = clamp(
+            halfHRef.current * scale,
+            MIN_HALF_H,
+            MAX_HALF_H,
+          )
+          flyToRef.current = null
+        }
+        lastPinchDist = dist
+      }
+    }
+
+    const handleTouchEnd = () => {
+      lastPinchDist = 0
+    }
+
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: true })
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     // --- Resize handler ---
     const handleResize = () => {
@@ -251,21 +387,90 @@ export function useThreeScene(
       const res = new Vector2(w, h)
       terrainMaterial.uniforms.u_resolution.value = res
       waterMaterial.uniforms.u_resolution.value = res
-      paperMaterial.uniforms.u_resolution.value = res
     }
     window.addEventListener('resize', handleResize)
+
+    // --- Render loop ---
+    let animFrameId = 0
+
+    const render = () => {
+      const elapsed = prefersReducedMotion ? 0 : clock.getElapsedTime()
+
+      // --- Fly-to animation ---
+      const ft = flyToRef.current
+      if (ft) {
+        const t = clamp((elapsed - ft.startTime) / ft.duration, 0, 1)
+        const eased = easeInOutCubic(t)
+        centerRef.current[0] = ft.startCenterX + (ft.centerX - ft.startCenterX) * eased
+        centerRef.current[1] = ft.startCenterY + (ft.centerY - ft.startCenterY) * eased
+        halfHRef.current = ft.startHalfH + (ft.halfH - ft.startHalfH) * eased
+        if (t >= 1) flyToRef.current = null
+      }
+
+      // --- Update camera frustum ---
+      const currentAspect = canvas.clientWidth / canvas.clientHeight
+      const hh = halfHRef.current
+      const ccx = centerRef.current[0]
+      const ccy = centerRef.current[1]
+      camera.left = ccx - hh * currentAspect
+      camera.right = ccx + hh * currentAspect
+      camera.top = ccy + hh
+      camera.bottom = ccy - hh
+      camera.updateProjectionMatrix()
+
+      // --- Reposition water quad to follow camera center ---
+      waterMesh.position.set(ccx, ccy, 0)
+
+      // Compute water quad DEM UV: its world bounds mapped to DEM UV
+      const waterHalfSize = WATER_QUAD_SIZE / 2
+      const [wuMin, wvMin, wuMax, wvMax] = worldBoundsToDemUV(
+        ccx - waterHalfSize,
+        ccy - waterHalfSize,
+        ccx + waterHalfSize,
+        ccy + waterHalfSize,
+      )
+      waterMaterial.uniforms.u_demUV.value.set(wuMin, wvMin, wuMax, wvMax)
+
+      // --- Mouse lerp ---
+      if (!prefersReducedMotion && !isMobile) {
+        mouseRef.current.lerp(targetMouseRef.current, 0.05)
+      }
+      const mouse = mouseRef.current
+
+      // --- Update uniforms ---
+      terrainMaterial.uniforms.u_time.value = elapsed
+      terrainMaterial.uniforms.u_mouse.value.set(mouse.x, mouse.y)
+      waterMaterial.uniforms.u_time.value = elapsed
+      waterMaterial.uniforms.u_mouse.value.set(mouse.x, mouse.y)
+
+      composer.render()
+      animFrameId = requestAnimationFrame(render)
+    }
+
+    render()
 
     // --- Cleanup ---
     return () => {
       cancelAnimationFrame(animFrameId)
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('mousemove', handleMouse)
+      canvas.removeEventListener('pointerdown', handlePointerDown)
+      canvas.removeEventListener('pointermove', handlePointerMove)
+      canvas.removeEventListener('pointerup', handlePointerUp)
+      canvas.removeEventListener('pointercancel', handlePointerUp)
+      canvas.removeEventListener('wheel', handleWheel)
+      canvas.removeEventListener('touchstart', handleTouchStart)
+      canvas.removeEventListener('touchmove', handleTouchMove)
+      canvas.removeEventListener('touchend', handleTouchEnd)
+      clockRef.current = null
       renderer.dispose()
       composer.dispose()
-      geo.dispose()
+      waterGeo.dispose()
+      terrainGeo.dispose()
       terrainMaterial.dispose()
       waterMaterial.dispose()
-      paperMaterial.dispose()
     }
-  }, [canvasRef, geoBounds])
+  }, [canvasRef, geoData])
+
+  return { zoomIn, zoomOut, resetView, flyTo }
 }
