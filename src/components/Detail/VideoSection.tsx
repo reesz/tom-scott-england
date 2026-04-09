@@ -8,7 +8,7 @@ interface VideoSectionProps {
 }
 
 export function VideoSection({ youtubeId, nebulaUrl, status }: VideoSectionProps) {
-  const [activeTab, setActiveTab] = useState<'youtube' | 'nebula'>('youtube')
+  const [ytHover, setYtHover] = useState(false)
 
   if (status === 'upcoming') {
     return (
@@ -20,9 +20,9 @@ export function VideoSection({ youtubeId, nebulaUrl, status }: VideoSectionProps
 
   return (
     <div>
-      {/* Video embed */}
-      {activeTab === 'youtube' && youtubeId && (
-        <div className="aspect-video overflow-hidden rounded-lg border border-[var(--line)]">
+      {/* Video area — always 16:9 */}
+      <div className="aspect-video overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)]">
+        {youtubeId ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
             title="YouTube video"
@@ -30,48 +30,75 @@ export function VideoSection({ youtubeId, nebulaUrl, status }: VideoSectionProps
             allowFullScreen
             className="h-full w-full"
           />
-        </div>
-      )}
+        ) : nebulaUrl ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="22" stroke="var(--gold-line)" strokeWidth="1" />
+              <circle cx="24" cy="24" r="18" stroke="var(--gold-line)" strokeWidth="0.5" strokeDasharray="3 4" />
+              <path d="M24 10l3 8h8l-6.5 5 2.5 8L24 26l-7 5 2.5-8L13 18h8z" fill="var(--gold)" fillOpacity="0.2" stroke="var(--gold)" strokeWidth="1" strokeLinejoin="round" />
+            </svg>
+            <p className="display-title text-xs font-semibold text-[var(--ink-soft)]">
+              Video available on Nebula
+            </p>
+          </div>
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-2">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="4" width="20" height="16" rx="3" stroke="var(--ink-faint)" strokeWidth="1.2" />
+              <path d="M10 9l5 3-5 3V9z" fill="var(--ink-faint)" />
+            </svg>
+            <p className="display-title text-xs text-[var(--ink-soft)]">Video coming soon</p>
+          </div>
+        )}
+      </div>
 
-      {activeTab === 'nebula' && nebulaUrl && (
-        <div className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-6 text-center">
-          <p className="mb-3 text-sm text-[var(--ink-soft)]">Watch on Nebula</p>
+      {/* External link buttons */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="relative">
+          {youtubeId ? (
+            <a
+              href={`https://www.youtube.com/watch?v=${youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="display-title flex w-full items-center justify-center rounded-md border border-[var(--red-action-border)] bg-[var(--red-action-bg)] px-3 py-2.5 text-[12px] font-semibold text-[var(--red-action)] no-underline transition hover:brightness-95"
+            >
+              ▶ YouTube
+            </a>
+          ) : (
+            <>
+              <button
+                onMouseEnter={() => setYtHover(true)}
+                onMouseLeave={() => setYtHover(false)}
+                className="display-title w-full cursor-default rounded-md border border-[var(--line)] px-3 py-2.5 text-[12px] font-semibold text-[var(--ink-faint)]"
+              >
+                ▶ YouTube
+              </button>
+              {ytHover && (
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-[11px] text-[var(--ink-soft)] shadow-[0_2px_8px_var(--shadow-soft)]">
+                  Coming soon on YouTube
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[var(--line)]" />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        {nebulaUrl ? (
           <a
             href={nebulaUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="display-title inline-flex items-center gap-2 rounded-full bg-[rgba(79,184,178,0.12)] px-5 py-2.5 text-sm font-semibold text-[var(--nebula-teal)] no-underline transition hover:bg-[rgba(79,184,178,0.2)]"
+            className="display-title flex w-full items-center justify-center rounded-md border border-[rgba(79,184,178,0.3)] bg-[rgba(79,184,178,0.1)] px-3 py-2.5 text-[12px] font-semibold text-[var(--nebula-teal)] no-underline transition hover:brightness-95"
           >
-            Open on Nebula
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 2h7v7M12 2L2 12" />
-            </svg>
+            ▶ Nebula
           </a>
-        </div>
-      )}
-
-      {/* Platform buttons */}
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          onClick={() => setActiveTab('youtube')}
-          className={`display-title rounded-md px-3 py-2.5 text-[12px] font-semibold transition ${
-            activeTab === 'youtube'
-              ? 'border border-[var(--red-action-border)] bg-[var(--red-action-bg)] text-[var(--red-action)]'
-              : 'border border-[var(--line)] text-[var(--ink-soft)] hover:bg-[var(--parchment-dark)]'
-          }`}
-        >
-          ▶ YouTube
-        </button>
-        <button
-          onClick={() => setActiveTab('nebula')}
-          className={`display-title rounded-md px-3 py-2.5 text-[12px] font-semibold transition ${
-            activeTab === 'nebula'
-              ? 'border border-[rgba(79,184,178,0.3)] bg-[rgba(79,184,178,0.1)] text-[var(--nebula-teal)]'
-              : 'border border-[var(--line)] text-[var(--ink-soft)] hover:bg-[var(--parchment-dark)]'
-          }`}
-        >
-          ▶ Nebula
-        </button>
+        ) : (
+          <button
+            className="display-title cursor-default rounded-md border border-[var(--line)] px-3 py-2.5 text-[12px] font-semibold text-[var(--ink-faint)]"
+            disabled
+          >
+            ▶ Nebula
+          </button>
+        )}
       </div>
     </div>
   )

@@ -32,7 +32,7 @@ export function CountyMiniMap({ feature, county, hoveredLandmarkId }: CountyMini
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
-      className="mx-auto w-full max-w-[200px] rounded-md border border-[var(--gold-line)] bg-[var(--parchment)]"
+      className="w-full rounded-md border border-[var(--gold-line)] bg-[var(--parchment)]"
       style={{ padding: '8px' }}
     >
       <path

@@ -98,7 +98,7 @@ export function MapView({ selectedId, onSelectCounty, onCloseDetail }: MapViewPr
       <MapContainer canvasRef={canvasRef} zoomIn={zoomIn} zoomOut={zoomOut} resetView={resetView} />
       <MapLegend />
 
-      <DetailPanel isOpen={panelOpen} onClose={onCloseDetail}>
+      <DetailPanel isOpen={panelOpen} onClose={onCloseDetail} status={selectedCounty?.status} releaseDate={selectedCounty?.releaseDate}>
         {selectedCounty && selectedFeature && (
           <CountyDetail county={selectedCounty} feature={selectedFeature} />
         )}

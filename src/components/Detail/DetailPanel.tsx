@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
+import { CountdownBadge } from './CountdownBadge'
 
 interface DetailPanelProps {
   isOpen: boolean
   onClose: () => void
+  status?: 'released' | 'upcoming'
+  releaseDate?: string | null
   children: ReactNode
 }
 
@@ -21,10 +24,10 @@ const CornerOrnament = ({ className }: { className: string }) => (
   </svg>
 )
 
-export function DetailPanel({ isOpen, onClose, children }: DetailPanelProps) {
+export function DetailPanel({ isOpen, onClose, status, releaseDate, children }: DetailPanelProps) {
   return (
     <aside
-      className={`fixed right-0 top-0 z-20 hidden h-full w-[380px] transition-transform duration-300 ease-out md:flex lg:w-[440px] ${
+      className={`fixed right-0 top-0 z-20 hidden h-full w-[430px] transition-transform duration-300 ease-out md:flex lg:w-[490px] ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
       style={{ boxShadow: `-6px 0 24px var(--shadow-strong)` }}
@@ -36,7 +39,6 @@ export function DetailPanel({ isOpen, onClose, children }: DetailPanelProps) {
           background: 'linear-gradient(90deg, var(--leather-dark), var(--leather) 30%, var(--leather) 70%, var(--leather-dark))',
         }}
       >
-        {/* Gold stitching */}
         <div
           className="absolute left-1/2 top-6 bottom-6 w-px -translate-x-1/2"
           style={{
@@ -47,24 +49,27 @@ export function DetailPanel({ isOpen, onClose, children }: DetailPanelProps) {
 
       {/* Page */}
       <div className="relative flex flex-1 flex-col overflow-hidden bg-[var(--parchment-light)]">
-        {/* Double gold rule inset */}
         <div className="pointer-events-none absolute inset-3 border-2 border-[var(--gold-line)]" />
         <div className="pointer-events-none absolute inset-4 border border-[var(--gold-line-subtle)]" />
 
-        {/* Corner ornaments */}
         <CornerOrnament className="left-2 top-2" />
         <CornerOrnament className="right-2 top-2 -scale-x-100" />
         <CornerOrnament className="bottom-2 left-2 -scale-y-100" />
         <CornerOrnament className="bottom-2 right-2 -scale-100" />
 
-        {/* Close button */}
-        <div className="relative z-10 flex items-center justify-end px-5 pt-7">
+        {/* Top bar: badge + close */}
+        <div className="relative z-10 flex items-center justify-between px-5 pt-5 pb-2">
+          <div>
+            {status && releaseDate && (
+              <CountdownBadge status={status} releaseDate={releaseDate} />
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--line)] transition hover:bg-[var(--parchment-dark)]"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--line)] transition hover:bg-[var(--parchment-dark)]"
             aria-label="Close detail panel"
           >
-            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round">
+            <svg width="12" height="12" viewBox="0 0 18 18" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round">
               <line x1="4" y1="4" x2="14" y2="14" />
               <line x1="14" y1="4" x2="4" y2="14" />
             </svg>

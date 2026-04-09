@@ -10,8 +10,8 @@ export function CountdownBadge({ status, releaseDate }: CountdownBadgeProps) {
 
   if (status === 'released') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--green-released-bg)] px-3 py-1 text-xs font-semibold text-[var(--green-released)]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[var(--green-released)]" />
+      <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[var(--green-released-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--green-released)]">
+        <span className="h-1 w-1 rounded-full bg-[var(--green-released)]" />
         Released {formatReleaseDate(releaseDate)}
       </span>
     )
@@ -19,10 +19,10 @@ export function CountdownBadge({ status, releaseDate }: CountdownBadgeProps) {
 
   const days = daysUntil(releaseDate)
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--parchment-dark)] px-3 py-1 text-xs font-semibold text-[var(--ink-soft)]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[var(--ink-soft)]" />
+    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[var(--parchment-dark)] px-2 py-0.5 text-[10px] font-semibold text-[var(--ink-soft)]">
+      <span className="h-1 w-1 rounded-full bg-[var(--ink-soft)]" />
       Coming {formatReleaseDate(releaseDate)}
-      {days > 0 && ` — ${days} day${days === 1 ? '' : 's'} to go`}
+      {days > 0 && ` — ${days}d`}
     </span>
   )
 }
