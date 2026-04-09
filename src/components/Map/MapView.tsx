@@ -33,12 +33,15 @@ export function MapView({ selectedId, onSelectCounty, onCloseDetail }: MapViewPr
     [geoData, selectedId],
   )
 
+  const panelOpen = !!selectedCounty
+
   const { zoomIn, zoomOut, resetView } = useThreeScene({
     canvasRef,
     geoData,
     islandsData,
     counties,
     selectedId,
+    panelOpen,
     onSelectCounty,
     onHoverCounty: setHoveredId,
   })
@@ -58,8 +61,6 @@ export function MapView({ selectedId, onSelectCounty, onCloseDetail }: MapViewPr
       </div>
     )
   }
-
-  const panelOpen = !!selectedCounty
 
   return (
     <>

@@ -68,6 +68,7 @@ export interface UseThreeSceneOptions {
   islandsData: IslandFeatureCollection | null
   counties: County[]
   selectedId: string | null
+  panelOpen: boolean
   onSelectCounty: (id: string) => void
   onHoverCounty: (id: string | null) => void
 }
@@ -103,10 +104,15 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const halfHRef = useRef(INITIAL_HALF_H)
   const flyToRef = useRef<FlyToTarget | null>(null)
   const selectedIdRef = useRef<string | null>(null)
+  const panelOpenRef = useRef(false)
 
   useEffect(() => {
     selectedIdRef.current = options.selectedId
   }, [options.selectedId])
+
+  useEffect(() => {
+    panelOpenRef.current = options.panelOpen
+  }, [options.panelOpen])
 
   // --- Public API callbacks ---
   const flyTo = useCallback(
@@ -519,10 +525,20 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         const feature = geoData!.features.find((f) => f.properties.id === hoveredCountyId)
         if (feature) {
           const [lon, lat] = geoCentroid(feature)
+          const [wx, wy] = geoToWorld(lon, lat)
           const elapsed = clockRef.current?.getElapsedTime() ?? 0
+
+          // Offset for panel: shift camera right so county appears centered in remaining viewport
+          let panelOffsetWorld = 0
+          if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+            const panelPx = window.innerWidth >= 1024 ? 400 : 320
+            const pixelToWorld = (halfHRef.current * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
+            panelOffsetWorld = (panelPx / 2) * pixelToWorld
+          }
+
           flyToRef.current = {
-            centerX: geoToWorld(lon, lat)[0],
-            centerY: geoToWorld(lon, lat)[1],
+            centerX: wx + panelOffsetWorld,
+            centerY: wy,
             halfH: clamp(0.04, MIN_HALF_H, MAX_HALF_H),
             startCenterX: centerRef.current[0],
             startCenterY: centerRef.current[1],
