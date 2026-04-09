@@ -946,7 +946,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         const maxHeightFromWidth = (bounds.width * 0.85) / (LABEL_ASPECT * textRatio)
         const maxHeightFromHeight = bounds.height * 0.3
         const fitHeight = Math.min(maxHeightFromWidth, maxHeightFromHeight)
-        const MIN_LABEL_WORLD = frustumWidth * 0.025
+        const MIN_LABEL_WORLD = frustumWidth * 0.042
         const MAX_LABEL_WORLD = frustumWidth * 0.06
         const labelHeight = Math.max(MIN_LABEL_WORLD, Math.min(MAX_LABEL_WORLD, fitHeight))
 
