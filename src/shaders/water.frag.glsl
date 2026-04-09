@@ -48,7 +48,11 @@ void main() {
 
   // Outside DEM range = deep ocean (mask 0.0), no discard
   bool outsideDEM = demUV.x < 0.0 || demUV.x > 1.0 || demUV.y < 0.0 || demUV.y > 1.0;
-  float mask = outsideDEM ? 0.0 : texture2D(u_mask, clamp(demUV, 0.0, 1.0)).r;
+  float rawMask = outsideDEM ? 0.0 : texture2D(u_mask, clamp(demUV, 0.0, 1.0)).r;
+
+  // Zero out mask below ~50.5N to hide France coastline effects
+  float franceMask = smoothstep(0.10, 0.14, demUV.y);
+  float mask = rawMask * franceMask;
 
   // Water only where mask < 0.5 (ocean)
   float waterAlpha = smoothstep(0.5, 0.1, mask);
