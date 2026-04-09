@@ -4,7 +4,8 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-const config = defineConfig({
+const config = defineConfig(({ command }) => ({
+  base: command === 'serve' ? '/' : '/tom-scott-england/',
   server: {
     watch: {
       ignored: ['**/routeTree.gen.ts'],
@@ -30,6 +31,6 @@ const config = defineConfig({
     TanStackRouterVite({ autoCodeSplitting: true }),
     viteReact(),
   ],
-})
+}))
 
 export default config
