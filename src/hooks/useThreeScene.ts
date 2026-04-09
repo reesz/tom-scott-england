@@ -143,7 +143,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   // --- Scene setup effect ---
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || !geoData) return
 
     const isMobile = window.innerWidth < 768
     const prefersReducedMotion = window.matchMedia(
