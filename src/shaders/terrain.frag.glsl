@@ -121,5 +121,10 @@ void main() {
                  * smoothstep(0.0, 0.02, demUV.y) * smoothstep(1.0, 0.98, demUV.y);
   alpha *= edgeFade;
 
+  // Fade out terrain below ~50.5N latitude to hide northern France
+  // DEM covers 49-61N; in Mercator UV ~0.11 corresponds to 50.5N
+  float franceFade = smoothstep(0.10, 0.14, demUV.y);
+  alpha *= franceFade;
+
   gl_FragColor = vec4(color, alpha);
 }

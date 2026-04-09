@@ -579,7 +579,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     // --- Zoom: wheel ---
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
-      const zoomFactor = e.deltaY > 0 ? 1.1 : 1 / 1.1
+      const zoomFactor = e.deltaY > 0 ? 1.04 : 1 / 1.04
       const oldHalfH = halfHRef.current
       const newHalfH = clamp(oldHalfH * zoomFactor, MIN_HALF_H, MAX_HALF_H)
 
@@ -762,9 +762,12 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       waterMaterial.uniforms.u_time.value = elapsed
       waterMaterial.uniforms.u_mouse.value.set(mouse.x, mouse.y)
 
-      // --- Update label visibility based on zoom ---
+      // --- Update label scale and visibility based on zoom ---
       const frustumWidth = camera.right - camera.left
       const MIN_SCREEN_FRACTION = 0.06
+      // Scale labels inversely with zoom so they stay constant screen size
+      const labelWorldScale = frustumWidth * 0.04 // ~4% of viewport width per label
+      const labelAspect = 4 // 512:128 canvas aspect
 
       for (const child of labelGroup.children) {
         const cId = child.userData.countyId
@@ -776,6 +779,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         const mat = (child as Sprite).material as SpriteMaterial
         mat.opacity += (targetOpacity - mat.opacity) * 0.1
         mat.visible = mat.opacity > 0.01
+
+        // Inverse scale: labels stay same screen size at all zoom levels
+        ;(child as Sprite).scale.set(labelWorldScale * labelAspect, labelWorldScale, 1)
       }
 
       // --- Lerp county fill materials toward targets ---
