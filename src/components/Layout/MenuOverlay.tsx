@@ -93,6 +93,16 @@ export function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
               Data protection
             </span>
           </a>
+          <a
+            href="/sources"
+            onClick={onClose}
+            className="display-title rounded-lg border-l-[3px] border-transparent px-4 py-3 text-base text-[var(--ink-soft)] no-underline transition hover:border-[var(--gold-line)] hover:bg-[var(--parchment-dark)]"
+          >
+            Sources
+            <span className="block text-[11px] font-normal italic text-[var(--ink-soft)]">
+              Data attribution
+            </span>
+          </a>
         </div>
 
         <div className="border-t border-[var(--line)] px-4 py-3">
