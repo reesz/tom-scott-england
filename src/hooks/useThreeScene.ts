@@ -20,6 +20,8 @@ import {
   MeshBasicMaterial,
   Group,
   Color,
+  Sprite,
+  SpriteMaterial,
   type Texture,
 } from 'three'
 import {
@@ -39,7 +41,9 @@ import {
   DEM_WORLD_MIN,
   DEM_WORLD_MAX,
 } from '#/lib/mercator'
+import { geoCentroid } from 'd3-geo'
 import { geoToShapes } from '#/lib/geoToShape'
+import { createLabelSprite } from '#/lib/createLabelSprite'
 import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
 import type { County } from '#/types/county'
 
@@ -313,6 +317,42 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     }
     scene.add(countyBorderGroup)
 
+    // --- Labels ---
+    const labelGroup = new Group()
+    labelGroup.renderOrder = 5
+
+    const countyWorldBounds = new Map<string, { width: number; height: number }>()
+
+    for (const feature of geoData.features) {
+      const countyId = feature.properties.id
+      const name = feature.properties.name
+
+      const [lon, lat] = geoCentroid(feature)
+      const [wx, wy] = geoToWorld(lon, lat)
+
+      const sprite = createLabelSprite(name)
+      const labelScale = 0.012
+      sprite.scale.set(labelScale * 4, labelScale, 1)
+      sprite.position.set(wx, wy, 0.01)
+      sprite.userData = { countyId }
+      labelGroup.add(sprite)
+
+      // Compute bounding box for visibility threshold
+      const coords = feature.geometry.type === 'Polygon'
+        ? feature.geometry.coordinates[0]
+        : feature.geometry.coordinates[0][0]
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+      for (const [clon, clat] of coords) {
+        const [cx, cy] = geoToWorld(clon, clat)
+        minX = Math.min(minX, cx)
+        maxX = Math.max(maxX, cx)
+        minY = Math.min(minY, cy)
+        maxY = Math.max(maxY, cy)
+      }
+      countyWorldBounds.set(countyId, { width: maxX - minX, height: maxY - minY })
+    }
+    scene.add(labelGroup)
+
     // --- Post-Processing ---
     const composer = new EffectComposer(renderer)
     composer.addPass(new RenderPass(scene, camera))
@@ -531,6 +571,22 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       waterMaterial.uniforms.u_time.value = elapsed
       waterMaterial.uniforms.u_mouse.value.set(mouse.x, mouse.y)
 
+      // --- Update label visibility based on zoom ---
+      const frustumWidth = camera.right - camera.left
+      const MIN_SCREEN_FRACTION = 0.06
+
+      for (const child of labelGroup.children) {
+        const cId = child.userData.countyId
+        const bounds = countyWorldBounds.get(cId)
+        if (!bounds) continue
+
+        const screenFraction = bounds.width / frustumWidth
+        const targetOpacity = screenFraction > MIN_SCREEN_FRACTION ? 1 : 0
+        const mat = (child as Sprite).material as SpriteMaterial
+        mat.opacity += (targetOpacity - mat.opacity) * 0.1
+        mat.visible = mat.opacity > 0.01
+      }
+
       composer.render()
       animFrameId = requestAnimationFrame(render)
     }
@@ -566,6 +622,12 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         if (child instanceof Mesh) {
           child.geometry.dispose()
           ;(child.material as MeshBasicMaterial).dispose()
+        }
+      })
+      labelGroup.traverse((child) => {
+        if (child instanceof Sprite) {
+          ;(child.material as SpriteMaterial).map?.dispose()
+          ;(child.material as SpriteMaterial).dispose()
         }
       })
       clockRef.current = null
