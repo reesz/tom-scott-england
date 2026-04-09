@@ -24,11 +24,11 @@ export function useGeoData() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/data/england-counties.geo.json').then((res) => {
+      fetch(`${import.meta.env.BASE_URL}data/england-counties.geo.json`).then((res) => {
         if (!res.ok) throw new Error(`Failed to load counties GeoJSON: ${res.status}`)
         return res.json() as Promise<CountyFeatureCollection>
       }),
-      fetch('/data/british-isles.geo.json').then((res) => {
+      fetch(`${import.meta.env.BASE_URL}data/british-isles.geo.json`).then((res) => {
         if (!res.ok) throw new Error(`Failed to load British Isles GeoJSON: ${res.status}`)
         return res.json() as Promise<IslandFeatureCollection>
       }),

@@ -7,7 +7,7 @@ export function useCountyData() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/data/counties.json')
+    fetch(`${import.meta.env.BASE_URL}data/counties.json`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load county data: ${res.status}`)
         return res.json() as Promise<CountiesData>
