@@ -49,7 +49,10 @@ import {
 import { geoCentroid } from 'd3-geo'
 import { geoToShapes } from '#/lib/geoToShape'
 import { createLabelSprite, updateLabelTexture } from '#/lib/createLabelSprite'
-import type { CountyFeatureCollection, IslandFeatureCollection } from '#/hooks/useGeoData'
+import type {
+  CountyFeatureCollection,
+  IslandFeatureCollection,
+} from '#/hooks/useGeoData'
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
@@ -117,7 +120,10 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const clockRef = useRef<Clock | null>(null)
 
   // Camera state stored in refs so callbacks can read/write without re-renders
-  const centerRef = useRef<[number, number]>([INITIAL_CENTER[0], INITIAL_CENTER[1]])
+  const centerRef = useRef<[number, number]>([
+    INITIAL_CENTER[0],
+    INITIAL_CENTER[1],
+  ])
   const halfHRef = useRef(INITIAL_HALF_H)
   const flyToRef = useRef<FlyToTarget | null>(null)
   const selectedIdRef = useRef<string | null>(null)
@@ -198,9 +204,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     const prefersReducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches
-    const dpr = isMobile
-      ? Math.min(window.devicePixelRatio, 1)
-      : Math.min(window.devicePixelRatio, 2)
+    const dpr = Math.min(window.devicePixelRatio, 2)
 
     // --- Renderer ---
     const renderer = new WebGLRenderer({
@@ -396,7 +400,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
       for (const shape of shapes) {
         const geom = new ShapeGeometry(shape)
-        const initColor = isReleased ? new Color(1, 1, 1) : new Color(1.0, 0.75, 0.45)
+        const initColor = isReleased
+          ? new Color(1, 1, 1)
+          : new Color(1.0, 0.75, 0.45)
         const mat = new MeshBasicMaterial({
           color: initColor,
           transparent: true,
@@ -410,7 +416,11 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         })
         const mesh = new Mesh(geom, mat)
         mesh.renderOrder = 3
-        mesh.userData = { countyId, countyName: feature.properties.name, isReleased }
+        mesh.userData = {
+          countyId,
+          countyName: feature.properties.name,
+          isReleased,
+        }
         countyFillGroup.add(mesh)
       }
     }
@@ -518,17 +528,24 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     const labelGroup = new Group()
     labelGroup.renderOrder = 5
 
-    const countyWorldBounds = new Map<string, { width: number; height: number }>()
+    const countyWorldBounds = new Map<
+      string,
+      { width: number; height: number }
+    >()
 
     for (const feature of geoData.features) {
       const countyId = feature.properties.id
       const name = feature.properties.name
 
       // Compute bounding box first (needed for label sizing)
-      const allRings = feature.geometry.type === 'Polygon'
-        ? feature.geometry.coordinates
-        : feature.geometry.coordinates.flat()
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+      const allRings =
+        feature.geometry.type === 'Polygon'
+          ? feature.geometry.coordinates
+          : feature.geometry.coordinates.flat()
+      let minX = Infinity,
+        maxX = -Infinity,
+        minY = Infinity,
+        maxY = -Infinity
       for (const ring of allRings) {
         for (const [clon, clat] of ring) {
           const [cx, cy] = geoToWorld(clon, clat)
@@ -567,7 +584,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     const DEFAULT_RELEASED = new Color(1, 1, 1)
     const DEFAULT_UPCOMING = new Color(1.0, 0.75, 0.45) // warm orange tint for unreleased
     const HOVER_COLOR = new Color(0.72, 0.68, 0.58)
-    const SELECT_COLOR = new Color(0.35, 1.2, 0.20)
+    const SELECT_COLOR = new Color(0.35, 1.2, 0.2)
 
     const materialTargets = new Map<string, Color>()
 
@@ -640,7 +657,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     // --- Initial fly-to if a county is already selected ---
     if (selectedIdRef.current && geoData) {
-      const feature = geoData.features.find((f) => f.properties.id === selectedIdRef.current)
+      const feature = geoData.features.find(
+        (f) => f.properties.id === selectedIdRef.current,
+      )
       if (feature) {
         const [lon, lat] = geoCentroid(feature)
         const [wx, wy] = geoToWorld(lon, lat)
@@ -648,7 +667,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         let panelOffsetWorld = 0
         if (typeof window !== 'undefined' && window.innerWidth >= 768) {
           const panelPx = window.innerWidth >= 1024 ? 400 : 320
-          const pixelToWorld = (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
+          const pixelToWorld =
+            (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) /
+            canvas.clientWidth
           panelOffsetWorld = (panelPx / 2) * pixelToWorld
         }
         flyToRef.current = {
@@ -706,7 +727,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       )
       raycaster.setFromCamera(pointer, camera)
       const hits = raycaster.intersectObjects(countyFillGroup.children, false)
-      const newHoveredId = hits.length > 0 ? hits[0].object.userData.countyId : null
+      const newHoveredId =
+        hits.length > 0 ? hits[0].object.userData.countyId : null
 
       if (newHoveredId !== hoveredCountyId) {
         hoveredCountyId = newHoveredId
@@ -714,14 +736,21 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         updateCountyMaterials()
       }
 
-      canvas.style.cursor = hoveredCountyId ? 'pointer' : (isPanning ? 'grabbing' : 'grab')
+      canvas.style.cursor = hoveredCountyId
+        ? 'pointer'
+        : isPanning
+          ? 'grabbing'
+          : 'grab'
 
       // Pan handling
       if (isPanning) {
         const dx = e.clientX - panStartX
         const dy = e.clientY - panStartY
         const moveThreshold = e.pointerType === 'touch' ? 10 : 3
-        if (Math.abs(e.clientX - pointerDownX) > moveThreshold || Math.abs(e.clientY - pointerDownY) > moveThreshold) {
+        if (
+          Math.abs(e.clientX - pointerDownX) > moveThreshold ||
+          Math.abs(e.clientY - pointerDownY) > moveThreshold
+        ) {
           pointerMoved = true
         }
         panStartX = e.clientX
@@ -729,7 +758,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
         const currentHalfH = halfHRef.current
         const currentAspect = canvas.clientWidth / canvas.clientHeight
-        const worldPerPixelX = (currentHalfH * 2 * currentAspect) / canvas.clientWidth
+        const worldPerPixelX =
+          (currentHalfH * 2 * currentAspect) / canvas.clientWidth
         const worldPerPixelY = (currentHalfH * 2) / canvas.clientHeight
 
         centerRef.current[0] -= dx * worldPerPixelX
@@ -757,7 +787,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         )
         raycaster.setFromCamera(pointer, camera)
         const hits = raycaster.intersectObjects(countyFillGroup.children, false)
-        const tappedCountyId = hits.length > 0 ? hits[0].object.userData.countyId : null
+        const tappedCountyId =
+          hits.length > 0 ? hits[0].object.userData.countyId : null
 
         if (tappedCountyId) {
           selectedIdRef.current = tappedCountyId
@@ -765,7 +796,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           updateCountyMaterials()
 
           // Fly to the selected county
-          const feature = geoData!.features.find((f) => f.properties.id === tappedCountyId)
+          const feature = geoData!.features.find(
+            (f) => f.properties.id === tappedCountyId,
+          )
           if (feature) {
             const [lon, lat] = geoCentroid(feature)
             const [wx, wy] = geoToWorld(lon, lat)
@@ -776,7 +809,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
             let panelOffsetWorld = 0
             if (typeof window !== 'undefined' && window.innerWidth >= 768) {
               const panelPx = window.innerWidth >= 1024 ? 400 : 320
-              const pixelToWorld = (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
+              const pixelToWorld =
+                (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) /
+                canvas.clientWidth
               panelOffsetWorld = (panelPx / 2) * pixelToWorld
             }
 
@@ -875,7 +910,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       if (e.key === 'Tab') {
         e.preventDefault()
         if (e.shiftKey) {
-          focusedCountyIndex = (focusedCountyIndex - 1 + countyIds.length) % countyIds.length
+          focusedCountyIndex =
+            (focusedCountyIndex - 1 + countyIds.length) % countyIds.length
         } else {
           focusedCountyIndex = (focusedCountyIndex + 1) % countyIds.length
         }
@@ -950,8 +986,10 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       if (ft) {
         const t = clamp((elapsed - ft.startTime) / ft.duration, 0, 1)
         const eased = easeInOutCubic(t)
-        centerRef.current[0] = ft.startCenterX + (ft.centerX - ft.startCenterX) * eased
-        centerRef.current[1] = ft.startCenterY + (ft.centerY - ft.startCenterY) * eased
+        centerRef.current[0] =
+          ft.startCenterX + (ft.centerX - ft.startCenterX) * eased
+        centerRef.current[1] =
+          ft.startCenterY + (ft.centerY - ft.startCenterY) * eased
         halfHRef.current = ft.startHalfH + (ft.halfH - ft.startHalfH) * eased
         if (t >= 1) flyToRef.current = null
       }
@@ -994,8 +1032,11 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
       // --- Update border width based on zoom ---
       const frustumHeight = camera.top - camera.bottom
-      const zoomRatio = INITIAL_HALF_H * 2 / frustumHeight // >1 when zoomed in, <1 when zoomed out
-      const borderWidth = Math.max(0.3, Math.min(2.0, 0.6 * Math.sqrt(zoomRatio)))
+      const zoomRatio = (INITIAL_HALF_H * 2) / frustumHeight // >1 when zoomed in, <1 when zoomed out
+      const borderWidth = Math.max(
+        0.3,
+        Math.min(2.0, 0.6 * Math.sqrt(zoomRatio)),
+      )
       for (const mat of borderLineMaterials) mat.linewidth = borderWidth
       for (const mat of highlightLineMaterials) mat.linewidth = borderWidth
 
@@ -1020,7 +1061,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         const bounds = countyWorldBounds.get(cId)
         if (!bounds) continue
 
-        const isActive = cId === selectedIdRef.current || cId === hoveredCountyId
+        const isActive =
+          cId === selectedIdRef.current || cId === hoveredCountyId
         const mat = sprite.material as SpriteMaterial
 
         // Target opacity: 1 for hovered/selected, 0 for others
@@ -1028,14 +1070,26 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         mat.opacity += (targetOpacity - mat.opacity) * 0.12
         mat.visible = mat.opacity > 0.01
 
-        // Size label to fit within county bounds
+        // Size label: target a fixed screen-pixel height, converted to world units
+        const frustumHeight = camera.top - camera.bottom
+        const worldPerPx = frustumHeight / canvas.clientHeight
         const textRatio = sprite.userData.textWidthRatio || 0.5
-        const maxHeightFromWidth = (bounds.width * 0.85) / (LABEL_ASPECT * textRatio)
-        const maxHeightFromHeight = bounds.height * 0.3
-        const fitHeight = Math.min(maxHeightFromWidth, maxHeightFromHeight)
-        const MIN_LABEL_WORLD = frustumWidth * 0.042
-        const MAX_LABEL_WORLD = frustumWidth * 0.06
-        const labelHeight = Math.max(MIN_LABEL_WORLD, Math.min(MAX_LABEL_WORLD, fitHeight))
+
+        let labelHeight: number
+        if (isMobile) {
+          // Mobile: fixed pixel size, ignore county bounds
+          labelHeight = 82 * worldPerPx
+        } else {
+          // Desktop: fit within county bounds, clamped to pixel range
+          const maxHeightFromWidth =
+            (bounds.width * 0.85) / (LABEL_ASPECT * textRatio)
+          const maxHeightFromHeight = bounds.height * 0.3
+          const fitHeight = Math.min(maxHeightFromWidth, maxHeightFromHeight)
+          labelHeight = Math.max(
+            28 * worldPerPx,
+            Math.min(44 * worldPerPx, fitHeight),
+          )
+        }
 
         // Animate: fade in + slide up
         const progress = mat.opacity

@@ -2,6 +2,7 @@ import { Sprite, SpriteMaterial, CanvasTexture, LinearFilter } from 'three'
 
 const CANVAS_WIDTH = 512
 const CANVAS_HEIGHT = 192
+const LABEL_SCALE = Math.max(2, Math.ceil(window.devicePixelRatio))
 const TITLE_SIZE = 44
 const SUB_SIZE = 24
 const TITLE_FONT = "'Fraunces', Georgia, serif"
@@ -73,7 +74,7 @@ function renderLabel(
 ): number {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.save()
-  ctx.scale(2, 2)
+  ctx.scale(LABEL_SCALE, LABEL_SCALE)
 
   // --- Title row ---
   ctx.font = `700 ${TITLE_SIZE}px ${TITLE_FONT}`
@@ -132,8 +133,8 @@ function renderLabel(
  */
 export function createLabelSprite(data: LabelData): Sprite {
   const canvas = document.createElement('canvas')
-  canvas.width = CANVAS_WIDTH * 2 // 2x for retina
-  canvas.height = CANVAS_HEIGHT * 2
+  canvas.width = CANVAS_WIDTH * LABEL_SCALE
+  canvas.height = CANVAS_HEIGHT * LABEL_SCALE
   const ctx = canvas.getContext('2d')!
 
   const textWidthRatio = renderLabel(canvas, ctx, data)
