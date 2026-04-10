@@ -43,10 +43,10 @@ export function Header() {
 
           <div>
             <div className="display-title text-[15px] font-bold leading-tight text-[var(--ink)]">
-              Every County
+              England
             </div>
             <div className="text-[8px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-soft)]">
-              A Cartographic Journey
+              A Tom Scott Project
             </div>
           </div>
         </Link>

@@ -148,7 +148,9 @@ export function createLabelSprite(data: LabelData): Sprite {
     transparent: true,
     depthWrite: false,
     depthTest: false,
+    opacity: 0,
   })
+  material.visible = false
 
   const sprite = new Sprite(material)
   sprite.name = `label-${data.name}`

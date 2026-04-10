@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 const config = defineConfig(({ command }) => ({
   base: command === 'serve' ? '/' : '/tom-scott-england/',
   server: {
+    host: true,
     watch: {
       ignored: ['**/routeTree.gen.ts'],
     },
