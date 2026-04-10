@@ -10,21 +10,49 @@ interface BottomSheetProps {
 export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
   const [snap, setSnap] = useState<number | string | null>(0.5)
 
+  const isFull = snap === 1
+
   // Reset to half-open when sheet opens
   useEffect(() => {
     if (isOpen) setSnap(0.5)
   }, [isOpen])
 
-  // Close sheet when tapping the canvas behind it
+  // Close sheet on canvas tap (not pan, not county selection)
+  // Full state: any tap on canvas closes. Half state: only taps on empty canvas (no county hit).
   useEffect(() => {
     if (!isOpen) return
     const canvas = document.querySelector('canvas')
     if (!canvas) return
 
-    const handleTap = () => onClose()
-    canvas.addEventListener('pointerup', handleTap)
-    return () => canvas.removeEventListener('pointerup', handleTap)
-  }, [isOpen, onClose])
+    let startX = 0
+    let startY = 0
+    const threshold = 10
+
+    const handleDown = (e: PointerEvent) => {
+      startX = e.clientX
+      startY = e.clientY
+    }
+    const handleUp = (e: PointerEvent) => {
+      const dx = Math.abs(e.clientX - startX)
+      const dy = Math.abs(e.clientY - startY)
+      if (dx > threshold || dy > threshold) return // was a pan, ignore
+
+      if (isFull) {
+        // Full state: any canvas tap closes
+        onClose()
+      }
+      // Half state: close only if no county was selected (the useThreeScene
+      // handler fires first and updates the URL — if a county was tapped the
+      // sheet stays open with the new county, so we do nothing here)
+    }
+
+    canvas.addEventListener('pointerdown', handleDown)
+    canvas.addEventListener('pointerup', handleUp)
+    return () => {
+      canvas.removeEventListener('pointerdown', handleDown)
+      canvas.removeEventListener('pointerup', handleUp)
+    }
+  }, [isOpen, isFull, onClose])
 
   // Prevent vaul/radix from blocking pointer events on the body
   useEffect(() => {
@@ -39,8 +67,6 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
     restore()
     return () => { observer.disconnect(); restore() }
   }, [isOpen])
-
-  const isFull = snap === 1
 
   // Signal full-screen state so the floating header can hide
   useEffect(() => {
