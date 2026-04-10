@@ -692,7 +692,9 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       panStartY = e.clientY
       pointerDownX = e.clientX
       pointerDownY = e.clientY
-      canvas.setPointerCapture(e.pointerId)
+      if (e.pointerType !== 'touch') {
+        canvas.setPointerCapture(e.pointerId)
+      }
     }
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -718,7 +720,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       if (isPanning) {
         const dx = e.clientX - panStartX
         const dy = e.clientY - panStartY
-        if (Math.abs(e.clientX - pointerDownX) > 3 || Math.abs(e.clientY - pointerDownY) > 3) {
+        const moveThreshold = e.pointerType === 'touch' ? 10 : 3
+        if (Math.abs(e.clientX - pointerDownX) > moveThreshold || Math.abs(e.clientY - pointerDownY) > moveThreshold) {
           pointerMoved = true
         }
         panStartX = e.clientX
@@ -739,41 +742,54 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     const handlePointerUp = (e: PointerEvent) => {
       isPanning = false
-      canvas.releasePointerCapture(e.pointerId)
+      if (e.pointerType !== 'touch') {
+        canvas.releasePointerCapture(e.pointerId)
+      }
       canvas.style.cursor = hoveredCountyId ? 'pointer' : 'default'
 
       // Click detection: pointer didn't move significantly
-      if (!pointerMoved && hoveredCountyId) {
-        selectedIdRef.current = hoveredCountyId
-        onSelectCountyRef.current(hoveredCountyId)
-        updateCountyMaterials()
+      if (!pointerMoved) {
+        // Fresh raycast at pointerup coordinates (touch has no persistent hover)
+        const rect = canvas.getBoundingClientRect()
+        pointer.set(
+          ((e.clientX - rect.left) / rect.width) * 2 - 1,
+          -(((e.clientY - rect.top) / rect.height) * 2 - 1),
+        )
+        raycaster.setFromCamera(pointer, camera)
+        const hits = raycaster.intersectObjects(countyFillGroup.children, false)
+        const tappedCountyId = hits.length > 0 ? hits[0].object.userData.countyId : null
 
-        // Fly to the selected county
-        const feature = geoData!.features.find((f) => f.properties.id === hoveredCountyId)
-        if (feature) {
-          const [lon, lat] = geoCentroid(feature)
-          const [wx, wy] = geoToWorld(lon, lat)
-          const elapsed = clockRef.current?.getElapsedTime() ?? 0
+        if (tappedCountyId) {
+          selectedIdRef.current = tappedCountyId
+          onSelectCountyRef.current(tappedCountyId)
+          updateCountyMaterials()
 
-          // Offset for panel: shift camera right so county appears centered in remaining viewport
-          // Use the TARGET frustum size (not current) since we'll be zoomed in when animation ends
-          const targetHalfH = clamp(0.04, MIN_HALF_H, MAX_HALF_H)
-          let panelOffsetWorld = 0
-          if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-            const panelPx = window.innerWidth >= 1024 ? 400 : 320
-            const pixelToWorld = (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
-            panelOffsetWorld = (panelPx / 2) * pixelToWorld
-          }
+          // Fly to the selected county
+          const feature = geoData!.features.find((f) => f.properties.id === tappedCountyId)
+          if (feature) {
+            const [lon, lat] = geoCentroid(feature)
+            const [wx, wy] = geoToWorld(lon, lat)
+            const elapsed = clockRef.current?.getElapsedTime() ?? 0
 
-          flyToRef.current = {
-            centerX: wx + panelOffsetWorld,
-            centerY: wy,
-            halfH: clamp(0.04, MIN_HALF_H, MAX_HALF_H),
-            startCenterX: centerRef.current[0],
-            startCenterY: centerRef.current[1],
-            startHalfH: halfHRef.current,
-            startTime: elapsed,
-            duration: 0.8,
+            // Offset for panel: shift camera right so county appears centered in remaining viewport
+            const targetHalfH = clamp(0.04, MIN_HALF_H, MAX_HALF_H)
+            let panelOffsetWorld = 0
+            if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+              const panelPx = window.innerWidth >= 1024 ? 400 : 320
+              const pixelToWorld = (targetHalfH * 2 * (canvas.clientWidth / canvas.clientHeight)) / canvas.clientWidth
+              panelOffsetWorld = (panelPx / 2) * pixelToWorld
+            }
+
+            flyToRef.current = {
+              centerX: wx + panelOffsetWorld,
+              centerY: wy,
+              halfH: clamp(0.04, MIN_HALF_H, MAX_HALF_H),
+              startCenterX: centerRef.current[0],
+              startCenterY: centerRef.current[1],
+              startHalfH: halfHRef.current,
+              startTime: elapsed,
+              duration: 0.8,
+            }
           }
         }
       }

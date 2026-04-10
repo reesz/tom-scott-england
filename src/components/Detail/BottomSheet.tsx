@@ -1,5 +1,5 @@
-import { useRef, useCallback, type ReactNode } from 'react'
-import { useDrag } from '@use-gesture/react'
+import { useState, useEffect, type ReactNode } from 'react'
+import { Drawer } from 'vaul'
 
 interface BottomSheetProps {
   isOpen: boolean
@@ -8,77 +8,106 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
-  const sheetRef = useRef<HTMLDivElement>(null)
+  const [snap, setSnap] = useState<number | string | null>(0.5)
 
-  const bind = useDrag(
-    ({ movement: [, my], memo }) => {
-      const sheet = sheetRef.current
-      if (!sheet) return memo
+  // Reset to half-open when sheet opens
+  useEffect(() => {
+    if (isOpen) setSnap(0.5)
+  }, [isOpen])
 
-      // On first drag frame, capture the starting Y
-      const startY = memo ?? sheet.getBoundingClientRect().top
-      const newY = Math.max(40, startY + my)
-      sheet.style.transition = 'none'
-      sheet.style.transform = `translateY(${newY}px)`
+  // Close sheet when tapping the canvas behind it
+  useEffect(() => {
+    if (!isOpen) return
+    const canvas = document.querySelector('canvas')
+    if (!canvas) return
 
-      return startY
-    },
-    {
-      filterTaps: true,
-      axis: 'y',
-    }
-  )
+    const handleTap = () => onClose()
+    canvas.addEventListener('pointerup', handleTap)
+    return () => canvas.removeEventListener('pointerup', handleTap)
+  }, [isOpen, onClose])
 
-  // Snap to closed or open positions when drag ends
-  const handleDragEnd = useCallback(() => {
-    const sheet = sheetRef.current
-    if (!sheet) return
-    const currentY = sheet.getBoundingClientRect().top
-    const vh = window.innerHeight
+  // Prevent vaul/radix from blocking pointer events on the body
+  useEffect(() => {
+    if (!isOpen) return
+    const restore = () => { document.body.style.pointerEvents = '' }
+    const observer = new MutationObserver(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = ''
+      }
+    })
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style'] })
+    restore()
+    return () => { observer.disconnect(); restore() }
+  }, [isOpen])
 
-    sheet.style.transition = 'transform 0.3s ease-out'
-    if (currentY > vh * 0.7) {
-      // Close
-      sheet.style.transform = `translateY(100%)`
-      setTimeout(onClose, 300)
-    } else if (currentY > vh * 0.4) {
-      // Snap to peek (60% from top)
-      sheet.style.transform = `translateY(${vh * 0.6}px)`
-    } else {
-      // Snap to full
-      sheet.style.transform = `translateY(40px)`
-    }
-  }, [onClose])
+  const isFull = snap === 1
 
-  const snapY = isOpen ? `${window.innerHeight * 0.6}px` : '100%'
+  // Signal full-screen state so the floating header can hide
+  useEffect(() => {
+    document.documentElement.toggleAttribute('data-sheet-full', isOpen && isFull)
+    return () => { document.documentElement.removeAttribute('data-sheet-full') }
+  }, [isOpen, isFull])
 
   return (
-    <div
-      ref={sheetRef}
-      {...bind()}
-      onPointerUp={handleDragEnd}
-      className={`fixed left-0 right-0 z-20 h-[calc(100dvh-40px)] touch-none rounded-t-2xl border-t border-[var(--line)] bg-[var(--parchment-light)] shadow-2xl backdrop-blur-lg md:hidden`}
-      style={{
-        transform: `translateY(${snapY})`,
-        transition: 'transform 0.3s ease-out',
-        top: 0,
-      }}
+    <Drawer.Root
+      open={isOpen}
+      onOpenChange={(open) => { if (!open) onClose() }}
+      snapPoints={[0.5, 1]}
+      activeSnapPoint={snap}
+      setActiveSnapPoint={setSnap}
+      modal={false}
+      handleOnly
+      noBodyStyles
     >
-      <div className="flex justify-center py-3">
-        <div className="h-1 w-10 rounded-full bg-[var(--gold-line)]" />
-      </div>
-      {/* Gold rule */}
-      <div className="mx-4 h-px bg-[linear-gradient(90deg,transparent,var(--gold-line),transparent)]" />
-      {/* Corner ornaments */}
-      <svg className="pointer-events-none absolute left-2 top-2 opacity-45" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" strokeWidth="1.2">
-        <path d="M2 2Q11 2 11 11Q2 11 2 2Z" /><path d="M4.5 4.5Q9 4.5 9 9Q4.5 9 4.5 4.5Z" />
-      </svg>
-      <svg className="pointer-events-none absolute right-2 top-2 -scale-x-100 opacity-45" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" strokeWidth="1.2">
-        <path d="M2 2Q11 2 11 11Q2 11 2 2Z" /><path d="M4.5 4.5Q9 4.5 9 9Q4.5 9 4.5 4.5Z" />
-      </svg>
-      <div className="h-[calc(100%-2rem)] overflow-y-auto px-5 pb-8">
-        {children}
-      </div>
-    </div>
+      <Drawer.Portal>
+        <Drawer.Content
+          className="fixed inset-x-0 bottom-0 z-20 h-[calc(100dvh-60px)] md:hidden"
+        >
+          {/* Close button — always 8px above the drawer's top edge */}
+          <button
+            onClick={onClose}
+            className="absolute right-3 top-0 z-10 flex h-[42px] w-[42px] -translate-y-[calc(100%+8px)] items-center justify-center rounded-xl border border-[var(--line)] bg-[var(--parchment-light)] shadow-lg hover:bg-[var(--parchment-dark)]"
+            aria-label="Close"
+          >
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round">
+              <line x1="4" y1="4" x2="14" y2="14" />
+              <line x1="14" y1="4" x2="4" y2="14" />
+            </svg>
+          </button>
+
+          {/* Inner container with overflow clipping and visual styling */}
+          <div className="flex h-full flex-col overflow-hidden rounded-t-2xl border-t border-[var(--line)] bg-[var(--parchment-light)] shadow-2xl backdrop-blur-lg">
+            {/* Handle */}
+            <div className="relative">
+              <Drawer.Handle
+                className="!relative !flex !h-6 !w-full !items-center !justify-center !rounded-none !bg-transparent !my-2"
+              />
+              <div className="pointer-events-none absolute inset-x-0 top-0 flex h-10 items-center justify-center">
+                <div className="h-1.5 w-12 rounded-full bg-[var(--gold-line)]" />
+              </div>
+            </div>
+
+            {/* Gold rule */}
+            <div className="mx-4 h-px bg-[linear-gradient(90deg,transparent,var(--gold-line),transparent)]" />
+
+            {/* Corner ornaments */}
+            <svg className="pointer-events-none absolute left-2 top-2 opacity-45" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" strokeWidth="1.2">
+              <path d="M2 2Q11 2 11 11Q2 11 2 2Z" /><path d="M4.5 4.5Q9 4.5 9 9Q4.5 9 4.5 4.5Z" />
+            </svg>
+            <svg className="pointer-events-none absolute right-2 top-2 -scale-x-100 opacity-45" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" strokeWidth="1.2">
+              <path d="M2 2Q11 2 11 11Q2 11 2 2Z" /><path d="M4.5 4.5Q9 4.5 9 9Q4.5 9 4.5 4.5Z" />
+            </svg>
+
+            {/* Scrollable content — only scrollable at full snap */}
+            <div
+              className="min-h-0 flex-1 px-5 pb-8"
+              style={{ overflowY: isFull ? 'auto' : 'hidden' }}
+            >
+              {children}
+            </div>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   )
 }

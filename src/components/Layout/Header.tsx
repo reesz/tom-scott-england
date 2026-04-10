@@ -17,7 +17,7 @@ export function Header() {
 
   return (
     <>
-      <div className="pointer-events-auto fixed left-3.5 top-3.5 z-30 flex items-center gap-2.5 rounded-[10px] border-2 border-[var(--line)] bg-[var(--surface)] px-3 py-2 shadow-[0_3px_10px_var(--shadow-soft)] backdrop-blur-lg">
+      <div className="pointer-events-auto fixed left-3.5 top-3.5 z-30 flex items-center gap-2.5 rounded-[10px] border-2 border-[var(--line)] bg-[var(--surface)] px-3 py-2 shadow-[0_3px_10px_var(--shadow-soft)] backdrop-blur-lg transition-transform duration-500 ease-out [[data-sheet-full]_&]:-translate-y-[calc(100%+14px)]">
         {/* Ornamental corner accents */}
         <div className="pointer-events-none absolute -left-[1px] -top-[1px] h-2 w-2 border-l-2 border-t-2 border-[var(--gold-line)] rounded-tl-[3px]" />
         <div className="pointer-events-none absolute -right-[1px] -top-[1px] h-2 w-2 border-r-2 border-t-2 border-[var(--gold-line)] rounded-tr-[3px]" />
