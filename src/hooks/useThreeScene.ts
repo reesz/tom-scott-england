@@ -699,6 +699,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     // --- Pan & Interaction state ---
     let isPanning = false
+    let isPinching = false
     let panStartX = 0
     let panStartY = 0
     let pointerDownX = 0
@@ -745,7 +746,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           : 'grab'
 
       // Pan handling
-      if (isPanning) {
+      if (isPanning && !isPinching) {
         const dx = e.clientX - panStartX
         const dy = e.clientY - panStartY
         const moveThreshold = e.pointerType === 'touch' ? 10 : 3
@@ -871,11 +872,14 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     canvas.addEventListener('wheel', handleWheel, { passive: false })
 
-    // --- Touch: pinch zoom ---
+    // --- Touch: pinch zoom (toward midpoint) ---
     let lastPinchDist = 0
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
+        isPinching = true
+        isPanning = false // cancel single-finger pan
+        pointerMoved = true // prevent tap detection
         const dx = e.touches[1].clientX - e.touches[0].clientX
         const dy = e.touches[1].clientY - e.touches[0].clientY
         lastPinchDist = Math.sqrt(dx * dx + dy * dy)
@@ -883,19 +887,32 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     }
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length === 2) {
+      if (e.touches.length === 2 && isPinching) {
         e.preventDefault()
         const dx = e.touches[1].clientX - e.touches[0].clientX
         const dy = e.touches[1].clientY - e.touches[0].clientY
         const dist = Math.sqrt(dx * dx + dy * dy)
 
-        if (lastPinchDist > 0) {
+        if (lastPinchDist > 0 && dist > 0) {
           const scale = lastPinchDist / dist
-          halfHRef.current = clamp(
-            halfHRef.current * scale,
-            MIN_HALF_H,
-            MAX_HALF_H,
-          )
+          const oldHalfH = halfHRef.current
+          const newHalfH = clamp(oldHalfH * scale, MIN_HALF_H, MAX_HALF_H)
+
+          // Zoom toward the midpoint of the two fingers
+          const rect = canvas.getBoundingClientRect()
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2
+          const ndcX = ((midX - rect.left) / rect.width) * 2 - 1
+          const ndcY = -(((midY - rect.top) / rect.height) * 2 - 1)
+          const currentAspect = canvas.clientWidth / canvas.clientHeight
+
+          const worldX = centerRef.current[0] + ndcX * oldHalfH * currentAspect
+          const worldY = centerRef.current[1] + ndcY * oldHalfH
+          centerRef.current[0] = worldX - ndcX * newHalfH * currentAspect
+          centerRef.current[1] = worldY - ndcY * newHalfH
+          clampCenter(centerRef.current)
+
+          halfHRef.current = newHalfH
           flyToRef.current = null
         }
         lastPinchDist = dist
@@ -904,6 +921,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
 
     const handleTouchEnd = () => {
       lastPinchDist = 0
+      isPinching = false
     }
 
     canvas.addEventListener('touchstart', handleTouchStart, { passive: true })
