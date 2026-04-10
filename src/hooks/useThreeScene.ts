@@ -719,21 +719,23 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     }
 
     const handlePointerMove = (e: PointerEvent) => {
-      // Raycast for hover (always, even when not panning)
-      const rect = canvas.getBoundingClientRect()
-      pointer.set(
-        ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -(((e.clientY - rect.top) / rect.height) * 2 - 1),
-      )
-      raycaster.setFromCamera(pointer, camera)
-      const hits = raycaster.intersectObjects(countyFillGroup.children, false)
-      const newHoveredId =
-        hits.length > 0 ? hits[0].object.userData.countyId : null
+      // Raycast for hover — skip on touch when panning to avoid accidental hovers
+      if (!(e.pointerType === 'touch' && pointerMoved)) {
+        const rect = canvas.getBoundingClientRect()
+        pointer.set(
+          ((e.clientX - rect.left) / rect.width) * 2 - 1,
+          -(((e.clientY - rect.top) / rect.height) * 2 - 1),
+        )
+        raycaster.setFromCamera(pointer, camera)
+        const hits = raycaster.intersectObjects(countyFillGroup.children, false)
+        const newHoveredId =
+          hits.length > 0 ? hits[0].object.userData.countyId : null
 
-      if (newHoveredId !== hoveredCountyId) {
-        hoveredCountyId = newHoveredId
-        onHoverCountyRef.current(hoveredCountyId)
-        updateCountyMaterials()
+        if (newHoveredId !== hoveredCountyId) {
+          hoveredCountyId = newHoveredId
+          onHoverCountyRef.current(hoveredCountyId)
+          updateCountyMaterials()
+        }
       }
 
       canvas.style.cursor = hoveredCountyId
@@ -752,6 +754,12 @@ export function useThreeScene(options: UseThreeSceneOptions) {
           Math.abs(e.clientY - pointerDownY) > moveThreshold
         ) {
           pointerMoved = true
+          // Clear hover on touch pan so labels don't appear while dragging
+          if (e.pointerType === 'touch' && hoveredCountyId) {
+            hoveredCountyId = null
+            onHoverCountyRef.current(null)
+            updateCountyMaterials()
+          }
         }
         panStartX = e.clientX
         panStartY = e.clientY
