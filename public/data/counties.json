@@ -100,10 +100,10 @@
         { "name": "Kelham Island Museum", "coords": { "lat": 53.3921, "lng": -1.4739 } },
         { "name": "Conisbrough Castle", "coords": { "lat": 53.4815, "lng": -1.2294 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "-v2ZhcJcnBE",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-these-mannequins-can-bleed",
+      "status": "released",
+      "releaseDate": "2026-04-20"
     },
     {
       "id": "tyne-and-wear",
@@ -119,9 +119,9 @@
         { "name": "Sage Gateshead", "coords": { "lat": 54.9682, "lng": -1.6038 } }
       ],
       "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-the-mist-that-keeps-the-tyne-tunnels-safe",
+      "status": "released",
+      "releaseDate": "2026-05-18"
     },
     {
       "id": "west-midlands",
@@ -172,10 +172,10 @@
         { "name": "Fountains Abbey", "coords": { "lat": 54.1154, "lng": -1.5758 } },
         { "name": "Whitby Abbey", "coords": { "lat": 54.4896, "lng": -0.6099 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "cMYYcddinkE",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-finally-got-to-drive-yorkshires-tiny-boats",
+      "status": "released",
+      "releaseDate": "2026-04-27"
     },
     {
       "id": "durham",
@@ -244,10 +244,10 @@
         { "name": "Burton Constable Hall", "coords": { "lat": 53.8259, "lng": -0.2441 } },
         { "name": "Spurn Point", "coords": { "lat": 53.5780, "lng": 0.1134 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "aZRXpmnys7I",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-if-you-found-candy-with-my-name-in-it-heres-why",
+      "status": "released",
+      "releaseDate": "2026-05-04"
     },
     {
       "id": "lincolnshire",
@@ -262,7 +262,7 @@
         { "name": "Lincoln Castle", "coords": { "lat": 53.2342, "lng": -0.5419 } },
         { "name": "Burghley House", "coords": { "lat": 52.6507, "lng": -0.4788 } }
       ],
-      "youtubeId": null,
+      "youtubeId": "PTEkUe1k6gc",
       "nebulaUrl": "https://nebula.tv/videos/tomscott-i-missed-the-evidence-can-you-spot-it",
       "status": "released",
       "releaseDate": "2026-04-06"
@@ -298,10 +298,10 @@
         { "name": "Sherwood Forest", "coords": { "lat": 53.2027, "lng": -1.0652 } },
         { "name": "Newstead Abbey", "coords": { "lat": 53.0815, "lng": -1.1701 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "Wp-TX1FoEN4",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-these-people-walk-towards-mining-disasters",
+      "status": "released",
+      "releaseDate": "2026-04-13"
     },
     {
       "id": "somerset",
@@ -820,10 +820,10 @@
         { "name": "Hadrian's Wall (Housesteads Fort)", "coords": { "lat": 54.9926, "lng": -2.3335 } },
         { "name": "Lindisfarne Priory", "coords": { "lat": 55.6682, "lng": -1.8018 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "V2lEgMHF2Fo",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-oh-no-i-sympathized-with-a-victorian-arms-dealer",
+      "status": "released",
+      "releaseDate": "2026-05-11"
     },
     {
       "id": "herefordshire",
