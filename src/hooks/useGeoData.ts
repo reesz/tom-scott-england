@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import { dataUrl } from '#/lib/dataUrl'
 
 export interface CountyFeatureProperties {
   id: string
@@ -24,11 +25,11 @@ export function useGeoData() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${import.meta.env.BASE_URL}data/england-counties.geo.json`).then((res) => {
+      fetch(dataUrl('england-counties.geo.json')).then((res) => {
         if (!res.ok) throw new Error(`Failed to load counties GeoJSON: ${res.status}`)
         return res.json() as Promise<CountyFeatureCollection>
       }),
-      fetch(`${import.meta.env.BASE_URL}data/british-isles.geo.json`).then((res) => {
+      fetch(dataUrl('british-isles.geo.json')).then((res) => {
         if (!res.ok) throw new Error(`Failed to load British Isles GeoJSON: ${res.status}`)
         return res.json() as Promise<IslandFeatureCollection>
       }),

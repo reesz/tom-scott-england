@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { CountiesData, County } from '#/types/county'
+import { dataUrl } from '#/lib/dataUrl'
 
 export function useCountyData() {
   const [counties, setCounties] = useState<County[]>([])
@@ -7,7 +8,7 @@ export function useCountyData() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/counties.json`)
+    fetch(dataUrl('counties.json'))
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load county data: ${res.status}`)
         return res.json() as Promise<CountiesData>
