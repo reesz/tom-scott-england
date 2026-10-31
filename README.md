@@ -54,6 +54,19 @@ All county data lives in [`public/data/counties.json`](public/data/counties.json
 }
 ```
 
+### Syncing New Episodes
+
+A script pulls the latest episodes and route from [tomscott.com/england](https://www.tomscott.com/england/) and updates both data files in one run. It needs only Python 3:
+
+```bash
+pnpm sync            # or: python3 scripts/sync-episodes.py
+pnpm sync --dry-run  # show what would change
+```
+
+No local setup needed: run **Actions → Sync episodes from tomscott.com → Run workflow** on GitHub. It runs the script, commits any data changes to `main` and redeploys the site; tick "dry run" to only see the changes in the run summary.
+
+It fills in YouTube/Nebula links, release dates and the next announced episode in `counties.json`, and adds new stops to `journey.json`, placing them on the map from Tom's route. Values already in the data are kept, so it is safe to re-run. Check the notes it prints: new stops get a guessed filming place, and a new historic county that isn't on the map needs an entry in `COUNTY_MAP` at the top of the script.
+
 ### How to Add or Update a County
 
 1. Fork this repo and create a branch
