@@ -29,10 +29,10 @@
         { "name": "Tower of London", "coords": { "lat": 51.5081, "lng": -0.0759 } },
         { "name": "Buckingham Palace", "coords": { "lat": 51.5014, "lng": -0.1419 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": "2026-06-01"
+      "youtubeId": "-E47v4Oy7fE",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-this-machine-breaks-things",
+      "status": "released",
+      "releaseDate": "2026-10-19"
     },
     {
       "id": "cornwall",
@@ -49,7 +49,7 @@
       "youtubeId": null,
       "nebulaUrl": null,
       "status": "upcoming",
-      "releaseDate": "2026-05-15"
+      "releaseDate": null
     },
     {
       "id": "greater-manchester",
@@ -64,10 +64,10 @@
         { "name": "Old Trafford", "coords": { "lat": 53.4631, "lng": -2.2913 } },
         { "name": "Museum of Science and Industry", "coords": { "lat": 53.4776, "lng": -2.2511 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "omYfLDlt-MA",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-pulling-the-lever-is-the-easy-part",
+      "status": "released",
+      "releaseDate": "2026-06-01"
     },
     {
       "id": "merseyside",
@@ -118,7 +118,7 @@
         { "name": "Angel of the North", "coords": { "lat": 54.9143, "lng": -1.5890 } },
         { "name": "Sage Gateshead", "coords": { "lat": 54.9682, "lng": -1.6038 } }
       ],
-      "youtubeId": null,
+      "youtubeId": "NxZOBBenmZM",
       "nebulaUrl": "https://nebula.tv/videos/tomscott-the-mist-that-keeps-the-tyne-tunnels-safe",
       "status": "released",
       "releaseDate": "2026-05-18"
@@ -208,10 +208,10 @@
         { "name": "Beeston Castle", "coords": { "lat": 53.1168, "lng": -2.7234 } },
         { "name": "Jodrell Bank Observatory", "coords": { "lat": 53.2364, "lng": -2.3074 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "YrZyJuaBfKA",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-can-a-70yearold-telescope-still-be-useful",
+      "status": "released",
+      "releaseDate": "2026-06-08"
     },
     {
       "id": "lancashire",
@@ -280,10 +280,10 @@
         { "name": "Haddon Hall", "coords": { "lat": 53.2094, "lng": -1.6541 } },
         { "name": "Mam Tor", "coords": { "lat": 53.3491, "lng": -1.8103 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "Mi_fYfpycT0",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-we-cant-invent-a-robot-better-than-these-ferrets",
+      "status": "released",
+      "releaseDate": "2026-06-15"
     },
     {
       "id": "nottinghamshire",
@@ -352,10 +352,10 @@
         { "name": "Sudeley Castle", "coords": { "lat": 51.9533, "lng": -1.9002 } },
         { "name": "Symonds Yat Rock", "coords": { "lat": 51.8435, "lng": -2.6456 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "SzM1hpnXux4",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-im-so-glad-this-hidden-monorail-broke-down",
+      "status": "released",
+      "releaseDate": "2026-07-27"
     },
     {
       "id": "devon",
@@ -406,10 +406,13 @@
         { "name": "Ely Cathedral", "coords": { "lat": 52.3993, "lng": 0.2626 } },
         { "name": "Wicken Fen", "coords": { "lat": 52.3013, "lng": 0.2956 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "Dr4lseoF82c",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-thomas-a-tank-engine-is-not-thomas-the-tank-engine",
+      "status": "released",
+      "releaseDate": "2026-09-07",
+      "additionalVideos": [
+        { "title": "Can I get into the Top 100 of tiddlywinks in one day?", "youtubeId": "AQqVcdTH5bQ", "nebulaUrl": "https://nebula.tv/videos/tomscott-can-i-get-into-the-top-100-of-tiddlywinks-in-one-day", "releaseDate": "2026-09-14" }
+      ]
     },
     {
       "id": "bedfordshire",
@@ -424,10 +427,10 @@
         { "name": "Dunstable Downs", "coords": { "lat": 51.8590, "lng": -0.5265 } },
         { "name": "Wrest Park", "coords": { "lat": 52.0228, "lng": -0.4513 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "YwxiF2Gqtww",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-flying-a-plane-badly-on-purpose",
+      "status": "released",
+      "releaseDate": "2026-08-31"
     },
     {
       "id": "essex",
@@ -442,10 +445,10 @@
         { "name": "Audley End House", "coords": { "lat": 52.0765, "lng": 0.2265 } },
         { "name": "Mersea Island", "coords": { "lat": 51.7798, "lng": 0.9339 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "TumxO2glmPQ",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-why-robots-cant-pick-strawberries-yet",
+      "status": "released",
+      "releaseDate": "2026-10-05"
     },
     {
       "id": "kent",
@@ -479,9 +482,9 @@
         { "name": "Bletchley Park (nearby)", "coords": { "lat": 51.9977, "lng": -0.7406 } }
       ],
       "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-this-room-keeps-great-britains-lights-on",
+      "status": "released",
+      "releaseDate": "2026-10-26"
     },
     {
       "id": "east-sussex",
@@ -532,10 +535,10 @@
         { "name": "Waddesdon Manor", "coords": { "lat": 51.8473, "lng": -0.9230 } },
         { "name": "Stowe Gardens", "coords": { "lat": 52.0468, "lng": -1.0174 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "tDLbO9KeddY",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-how-do-you-keep-8995-codebreakers-secret",
+      "status": "released",
+      "releaseDate": "2026-08-17"
     },
     {
       "id": "cumbria",
@@ -550,10 +553,13 @@
         { "name": "Hadrian's Wall (Housesteads)", "coords": { "lat": 54.9926, "lng": -2.3335 } },
         { "name": "Castlerigg Stone Circle", "coords": { "lat": 54.6026, "lng": -3.0975 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "Pwn8IrDeiwc",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-this-man-stops-people-drowning-in-quicksand",
+      "status": "released",
+      "releaseDate": "2026-05-25",
+      "additionalVideos": [
+        { "title": "Tom gets excited about a pendulum", "youtubeId": "BxXfeotgVVA", "nebulaUrl": "https://nebula.tv/videos/tomscott-tom-gets-excited-about-a-pendulum", "releaseDate": "2026-10-12" }
+      ]
     },
     {
       "id": "hertfordshire",
@@ -568,10 +574,10 @@
         { "name": "Hatfield House", "coords": { "lat": 51.7622, "lng": -0.2205 } },
         { "name": "Verulamium Park", "coords": { "lat": 51.7488, "lng": -0.3568 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "IJSO-BL3pEU",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-didnt-need-to-drive-this-mars-rover-but-i-did",
+      "status": "released",
+      "releaseDate": "2026-08-24"
     },
     {
       "id": "leicestershire",
@@ -604,10 +610,10 @@
         { "name": "Sandringham House", "coords": { "lat": 52.8346, "lng": 0.5082 } },
         { "name": "Holkham Beach", "coords": { "lat": 52.9677, "lng": 0.8207 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "pZtU48TjxXg",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-when-i-blow-this-whistle-a-swimming-pool-appears",
+      "status": "released",
+      "releaseDate": "2026-09-21"
     },
     {
       "id": "northamptonshire",
@@ -622,10 +628,10 @@
         { "name": "Boughton House", "coords": { "lat": 52.4367, "lng": -0.7230 } },
         { "name": "Rockingham Castle", "coords": { "lat": 52.4836, "lng": -0.7283 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "EU-rZuJxdbw",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-this-100yearold-ride-must-never-change-again",
+      "status": "released",
+      "releaseDate": "2026-08-10"
     },
     {
       "id": "oxfordshire",
@@ -640,10 +646,10 @@
         { "name": "Blenheim Palace", "coords": { "lat": 51.8414, "lng": -1.3620 } },
         { "name": "Rollright Stones", "coords": { "lat": 51.9762, "lng": -1.5716 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "7S8mK7WSNZQ",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-two-nerds-try-to-build-a-wall",
+      "status": "released",
+      "releaseDate": "2026-08-03"
     },
     {
       "id": "staffordshire",
@@ -658,10 +664,10 @@
         { "name": "Alton Towers", "coords": { "lat": 52.9883, "lng": -1.8905 } },
         { "name": "Cannock Chase", "coords": { "lat": 52.7229, "lng": -1.9680 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "hCZwH5CSlEY",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-got-hit-in-the-teeth-with-900yearold-antlers",
+      "status": "released",
+      "releaseDate": "2026-06-22"
     },
     {
       "id": "suffolk",
@@ -676,10 +682,10 @@
         { "name": "Sutton Hoo", "coords": { "lat": 52.0864, "lng": 1.3358 } },
         { "name": "Orford Castle", "coords": { "lat": 52.0922, "lng": 1.5360 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "drrUvxtT6lU",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-this-arcade-game-makes-you-climb-a-ladder",
+      "status": "released",
+      "releaseDate": "2026-09-28"
     },
     {
       "id": "surrey",
@@ -712,10 +718,10 @@
         { "name": "Shakespeare's Birthplace, Stratford", "coords": { "lat": 52.1930, "lng": -1.7080 } },
         { "name": "Kenilworth Castle", "coords": { "lat": 52.3447, "lng": -1.5759 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "blubg9l8AVc",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-launched-the-mighty-trebuchet",
+      "status": "released",
+      "releaseDate": "2026-06-29"
     },
     {
       "id": "west-sussex",
@@ -748,10 +754,10 @@
         { "name": "Malvern Hills", "coords": { "lat": 52.1046, "lng": -2.3298 } },
         { "name": "Witley Court", "coords": { "lat": 52.2726, "lng": -2.2878 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "WGia1R3xacM",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-if-i-get-this-wrong-50000-people-will-hear-it",
+      "status": "released",
+      "releaseDate": "2026-07-06"
     },
     {
       "id": "shropshire",
@@ -766,10 +772,10 @@
         { "name": "Shrewsbury Castle", "coords": { "lat": 52.7094, "lng": -2.7505 } },
         { "name": "Stokesay Castle", "coords": { "lat": 52.4547, "lng": -2.8288 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "jUa2x_xpFuM",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-have-a-weird-conspiracy-theory-about-this-bridge",
+      "status": "released",
+      "releaseDate": "2026-07-13"
     },
     {
       "id": "wiltshire",
@@ -787,7 +793,7 @@
       "youtubeId": null,
       "nebulaUrl": null,
       "status": "upcoming",
-      "releaseDate": null
+      "releaseDate": "2026-11-02"
     },
     {
       "id": "isle-of-wight",
@@ -838,10 +844,10 @@
         { "name": "Hay-on-Wye", "coords": { "lat": 52.0731, "lng": -3.1280 } },
         { "name": "Goodrich Castle", "coords": { "lat": 51.8722, "lng": -2.6290 } }
       ],
-      "youtubeId": null,
-      "nebulaUrl": null,
-      "status": "upcoming",
-      "releaseDate": null
+      "youtubeId": "8IsbKH-EsAY",
+      "nebulaUrl": "https://nebula.tv/videos/tomscott-i-get-excited-about-an-ampersand",
+      "status": "released",
+      "releaseDate": "2026-07-20"
     }
   ]
 }

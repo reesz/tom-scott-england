@@ -61,7 +61,8 @@ All county data lives in [`public/data/counties.json`](public/data/counties.json
 3. To **add video links** for a newly released county, fill in `youtubeId` (just the ID, e.g. `dQw4w9WgXcQ`) and `nebulaUrl` (full URL), and set `status` to `"released"`
 4. To **update info** (description, landmarks, population, etc.), edit the relevant fields
 5. For **upcoming** counties, set `youtubeId` and `nebulaUrl` to `null` and `status` to `"upcoming"`
-6. Open a pull request with a brief description of your changes
+6. If a county gets **more than one episode** (e.g. Tom's historic counties Westmorland and Cumberland both map to Cumbria), keep the first in the top-level fields and list the rest in an optional `additionalVideos` array of `{ "title", "youtubeId", "nebulaUrl", "releaseDate" }` objects
+7. Open a pull request with a brief description of your changes
 
 ### Guidelines
 

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { County } from '#/types/county'
 import type { CountyFeature } from '#/hooks/useGeoData'
 import { CountyMiniMap } from './CountyMiniMap'
-import { VideoEmbed, PlatformButtons } from './VideoSection'
+import { VideoEmbed, PlatformButtons, MoreVideos } from './VideoSection'
 
 interface CountyDetailProps {
   county: County
@@ -33,6 +33,10 @@ export function CountyDetail({ county, feature }: CountyDetailProps) {
       {/* Platform buttons — sticky at top of scroll */}
       {county.status === 'released' && (
         <PlatformButtons youtubeId={county.youtubeId} nebulaUrl={county.nebulaUrl} />
+      )}
+
+      {county.additionalVideos && county.additionalVideos.length > 0 && (
+        <MoreVideos videos={county.additionalVideos} />
       )}
 
       {/* 2. County header + description */}

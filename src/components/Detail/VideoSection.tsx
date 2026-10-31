@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import type { Video } from '#/types/county'
+import { formatReleaseDate } from '#/lib/formatDate'
 
 interface VideoSectionProps {
   youtubeId: string | null
@@ -105,6 +107,55 @@ export function PlatformButtons({ youtubeId, nebulaUrl }: PlatformButtonsProps) 
           ▶ Nebula
         </button>
       )}
+    </div>
+  )
+}
+
+interface MoreVideosProps {
+  videos: Video[]
+}
+
+export function MoreVideos({ videos }: MoreVideosProps) {
+  return (
+    <div>
+      <span className="atlas-kicker mb-2 block">More from this county</span>
+      <ul className="flex flex-col gap-2">
+        {videos.map((v) => (
+          <li
+            key={v.youtubeId ?? v.nebulaUrl ?? v.title}
+            className="rounded-md border border-[var(--line)] bg-[var(--surface)] px-3 py-2.5"
+          >
+            <p className="display-title text-[13px] font-semibold leading-snug text-[var(--ink)]">
+              {v.title}
+            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[11px] font-semibold">
+              {v.releaseDate && (
+                <span className="font-normal text-[var(--ink-soft)]">{formatReleaseDate(v.releaseDate)}</span>
+              )}
+              {v.youtubeId && (
+                <a
+                  href={`https://www.youtube.com/watch?v=${v.youtubeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--red-action)] no-underline hover:underline"
+                >
+                  ▶ YouTube
+                </a>
+              )}
+              {v.nebulaUrl && (
+                <a
+                  href={v.nebulaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--nebula-teal)] no-underline hover:underline"
+                >
+                  ▶ Nebula
+                </a>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

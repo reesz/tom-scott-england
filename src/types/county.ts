@@ -15,6 +15,13 @@ export interface CountyTown {
 
 export type CountyStatus = 'released' | 'upcoming'
 
+export interface Video {
+  title: string
+  youtubeId: string | null
+  nebulaUrl: string | null
+  releaseDate: string | null
+}
+
 export interface County {
   id: string
   name: string
@@ -28,6 +35,7 @@ export interface County {
   nebulaUrl: string | null
   status: CountyStatus
   releaseDate: string | null
+  additionalVideos?: Video[]
 }
 
 export interface CountiesData {
