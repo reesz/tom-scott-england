@@ -22,6 +22,7 @@ import {
   Raycaster,
   type Texture,
   CanvasTexture,
+  SRGBColorSpace,
   CustomBlending,
   MultiplyBlending,
   ZeroFactor,
@@ -53,6 +54,7 @@ import type {
   CountyFeatureCollection,
   IslandFeatureCollection,
 } from '#/hooks/useGeoData'
+import type { JourneyStop } from '#/types/journey'
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
@@ -76,6 +78,20 @@ const DEM_CENTER_Y = (DEM_WORLD_MIN[1] + DEM_WORLD_MAX[1]) / 2
 const DEM_WIDTH = DEM_WORLD_MAX[0] - DEM_WORLD_MIN[0]
 const DEM_HEIGHT = DEM_WORLD_MAX[1] - DEM_WORLD_MIN[1]
 
+// Journey route colours (from the parchment/ink palette in styles.css)
+const ROUTE_INK_COLOR = 0x8f2414 // oxblood, between --red-action and --ink
+const ROUTE_GHOST_COLOR = 0xb39a78 // light ink; multiplied, so stays faint
+const ROUTE_RAIL_COLOR = 0x3d2e1a // --ink
+const ROUTE_PAPER_COLOR = 0xf5e6c8 // --parchment
+const ROUTE_LEG_SUBDIVISIONS = 32
+const JOURNEY_HALF_H = 0.045
+
+// Detail panel widths (see DetailPanel: w-[430px] lg:w-[490px])
+function detailPanelPx(): number {
+  if (typeof window === 'undefined' || window.innerWidth < 768) return 0
+  return window.innerWidth >= 1024 ? 490 : 430
+}
+
 export interface UseThreeSceneOptions {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
   geoData: CountyFeatureCollection | null
@@ -86,6 +102,15 @@ export interface UseThreeSceneOptions {
   onSelectCounty: (id: string) => void
   onHoverCounty: (id: string | null) => void
   onCloseDetail: () => void
+  journeyStops: JourneyStop[]
+  journeyStep: number | null
+}
+
+interface JourneyAnim {
+  from: number
+  to: number
+  startTime: number
+  duration: number
 }
 
 interface FlyToTarget {
@@ -97,6 +122,8 @@ interface FlyToTarget {
   startHalfH: number
   startTime: number
   duration: number
+  /** Zoom out to this half-height mid-flight (for long hops) */
+  peakHalfH?: number
 }
 
 function easeInOutCubic(t: number): number {
@@ -113,7 +140,7 @@ function clampCenter(center: [number, number]): void {
 }
 
 export function useThreeScene(options: UseThreeSceneOptions) {
-  const { canvasRef, geoData, islandsData, counties } = options
+  const { canvasRef, geoData, islandsData, counties, journeyStops } = options
 
   const mouseRef = useRef(new Vector2(0.5, 0.5))
   const targetMouseRef = useRef(new Vector2(0.5, 0.5))
@@ -128,6 +155,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
   const flyToRef = useRef<FlyToTarget | null>(null)
   const selectedIdRef = useRef<string | null>(null)
   const panelOpenRef = useRef(false)
+  const journeyStepRef = useRef<number | null>(null)
+  const journeyAnimRef = useRef<JourneyAnim | null>(null)
 
   const updateMaterialsRef = useRef<(() => void) | null>(null)
 
@@ -194,6 +223,51 @@ export function useThreeScene(options: UseThreeSceneOptions) {
     // Trigger material update so highlight clears immediately
     updateMaterialsRef.current?.()
   }, [options.selectedId, flyTo])
+
+  // Journey: fly along the route to the current stop
+  useEffect(() => {
+    const prev = journeyStepRef.current
+    const step = options.journeyStep
+    journeyStepRef.current = step
+    journeyAnimRef.current = null
+    const stop = step !== null ? options.journeyStops[step] : undefined
+    const clock = clockRef.current
+    const canvas = canvasRef.current
+    if (!stop || !clock || !canvas) return
+
+    const [wx, wy] = geoToWorld(stop.coords.lng, stop.coords.lat)
+    // Keep the stop centred in the map area left of the detail panel, or above
+    // the half-height bottom sheet (between it and the stepper) when open on mobile
+    const pxToWorld = (JOURNEY_HALF_H * 2) / canvas.clientHeight
+    const centerX = wx + (detailPanelPx() / 2) * pxToWorld
+    const sheetOpen = window.innerWidth < 768 && panelOpenRef.current
+    const centerY = wy - (sheetOpen ? canvas.clientHeight * 0.12 * pxToWorld : 0)
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      centerRef.current = [centerX, centerY]
+      halfHRef.current = JOURNEY_HALF_H
+      return
+    }
+
+    const dist = Math.hypot(centerX - centerRef.current[0], centerY - centerRef.current[1])
+    const duration = clamp(0.8 + dist * 4, 0.8, 2.2)
+    const now = clock.getElapsedTime()
+    flyToRef.current = {
+      centerX,
+      centerY,
+      halfH: JOURNEY_HALF_H,
+      startCenterX: centerRef.current[0],
+      startCenterY: centerRef.current[1],
+      startHalfH: halfHRef.current,
+      startTime: now,
+      duration,
+      peakHalfH: clamp(dist * 0.6, JOURNEY_HALF_H, MAX_HALF_H),
+    }
+    // Draw the leg as the camera travels it (forward steps only)
+    if (prev !== null && step === prev + 1) {
+      journeyAnimRef.current = { from: prev, to: step, startTime: now, duration }
+    }
+  }, [options.journeyStep, options.journeyStops, canvasRef])
 
   // --- Scene setup effect ---
   useEffect(() => {
@@ -574,6 +648,314 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       labelGroup.add(sprite)
     }
     scene.add(labelGroup)
+
+    // --- Journey route (Tom's travel order, shown while stepping through) ---
+    // Styled like an engraved travel route: ink lines multiplied into the paper,
+    // railway legs in the classic cased symbol, numbered station roundels.
+    const routeGroup = new Group()
+    routeGroup.renderOrder = 4.5
+    routeGroup.visible = false
+    const routeLineMaterials: LineMaterial[] = []
+    const dashedRouteMaterials: { mat: LineMaterial; dashPx: number; gapPx: number }[] = []
+    const makeRouteMaterial = (
+      color: number,
+      linewidth: number,
+      { dash, printed = true }: { dash?: [number, number]; printed?: boolean } = {},
+    ) => {
+      const mat = new LineMaterial({
+        color,
+        linewidth,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        dashed: !!dash,
+        // Multiply like the county borders, so the ink reads as printed on the map
+        ...(printed && { blending: MultiplyBlending, premultipliedAlpha: true }),
+        resolution: new Vector2(canvas.clientWidth, canvas.clientHeight),
+      })
+      routeLineMaterials.push(mat)
+      if (dash) dashedRouteMaterials.push({ mat, dashPx: dash[0], gapPx: dash[1] })
+      return mat
+    }
+    const stopWorld = journeyStops.map((s) => geoToWorld(s.coords.lng, s.coords.lat))
+
+    // Faint dotted line for the whole route, for context
+    const ghostPositions: number[] = []
+    for (let i = 1; i < stopWorld.length; i++) {
+      ghostPositions.push(...stopWorld[i - 1], 0.03, ...stopWorld[i], 0.03)
+    }
+    if (ghostPositions.length > 0) {
+      const ghostGeom = new LineSegmentsGeometry()
+      ghostGeom.setPositions(ghostPositions)
+      const ghost = new LineSegments2(
+        ghostGeom,
+        makeRouteMaterial(ROUTE_GHOST_COLOR, 2, { dash: [2, 5] }),
+      )
+      ghost.computeLineDistances()
+      ghost.renderOrder = 4.5
+      routeGroup.add(ghost)
+    }
+
+    // One subdivided geometry per leg so the active leg can be drawn progressively.
+    // legs[i] leads to stop i.
+    const roadMaterial = makeRouteMaterial(ROUTE_INK_COLOR, 3, { dash: [10, 5] })
+    const railCasingMaterial = makeRouteMaterial(ROUTE_RAIL_COLOR, 5.5)
+    const railBlocksMaterial = makeRouteMaterial(ROUTE_PAPER_COLOR, 2.5, {
+      dash: [8, 8],
+      printed: false,
+    })
+    const upcomingMaterial = makeRouteMaterial(ROUTE_INK_COLOR, 3, { dash: [1, 7] })
+    const legs: ({ geom: LineSegmentsGeometry; lines: LineSegments2[] } | null)[] = [null]
+    for (let i = 1; i < stopWorld.length; i++) {
+      const [ax, ay] = stopWorld[i - 1]
+      const [bx, by] = stopWorld[i]
+      const positions: number[] = []
+      for (let k = 0; k < ROUTE_LEG_SUBDIVISIONS; k++) {
+        const t0 = k / ROUTE_LEG_SUBDIVISIONS
+        const t1 = (k + 1) / ROUTE_LEG_SUBDIVISIONS
+        positions.push(
+          ax + (bx - ax) * t0, ay + (by - ay) * t0, 0.03,
+          ax + (bx - ax) * t1, ay + (by - ay) * t1, 0.03,
+        )
+      }
+      const geom = new LineSegmentsGeometry()
+      geom.setPositions(positions)
+      const stop = journeyStops[i]
+      const materials = stop.upcoming
+        ? [upcomingMaterial]
+        : stop.travel === 'train'
+          ? [railCasingMaterial, railBlocksMaterial]
+          : [roadMaterial]
+      const lines = materials.map((mat, layer) => {
+        const line = new LineSegments2(geom, mat)
+        line.computeLineDistances()
+        line.renderOrder = 4.6 + layer * 0.01
+        line.visible = false
+        routeGroup.add(line)
+        return line
+      })
+      legs.push({ geom, lines })
+    }
+
+    // Canvas-drawn route markers, in the panel's Fraunces numerals
+    const MARKER_BOX = 64
+    const markerScale = Math.max(2, Math.ceil(window.devicePixelRatio))
+    const markerCanvases: { canvas: HTMLCanvasElement; draw: (ctx: CanvasRenderingContext2D) => void; tex: CanvasTexture }[] = []
+    const makeMarkerTexture = (draw: (ctx: CanvasRenderingContext2D) => void) => {
+      const c = document.createElement('canvas')
+      c.width = MARKER_BOX * markerScale
+      c.height = MARKER_BOX * markerScale
+      const tex = new CanvasTexture(c)
+      tex.minFilter = LinearFilter
+      // Canvas colours are sRGB; without this the palette renders washed out
+      tex.colorSpace = SRGBColorSpace
+      markerCanvases.push({ canvas: c, draw, tex })
+      return tex
+    }
+    const paintMarkers = () => {
+      for (const { canvas: c, draw, tex } of markerCanvases) {
+        const ctx = c.getContext('2d')!
+        ctx.setTransform(markerScale, 0, 0, markerScale, 0, 0)
+        ctx.clearRect(0, 0, MARKER_BOX, MARKER_BOX)
+        draw(ctx)
+        tex.needsUpdate = true
+      }
+    }
+    const mid = MARKER_BOX / 2
+    const circle = (ctx: CanvasRenderingContext2D, r: number) => {
+      ctx.beginPath()
+      ctx.arc(mid, mid, r, 0, Math.PI * 2)
+    }
+    const numeral = (ctx: CanvasRenderingContext2D, n: number, size: number, color: string) => {
+      ctx.fillStyle = color
+      ctx.font = `700 ${n > 9 ? size * 0.86 : size}px 'Fraunces', Georgia, serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(String(n), mid, mid + size * 0.06)
+    }
+    // Visited stop: parchment roundel with an ink rim and gold hairline
+    const visitedTexture = (n: number) =>
+      makeMarkerTexture((ctx) => {
+        ctx.shadowColor = 'rgba(42, 26, 10, 0.35)'
+        ctx.shadowBlur = 3
+        ctx.shadowOffsetY = 1
+        circle(ctx, 22)
+        ctx.fillStyle = '#faf3e0'
+        ctx.fill()
+        ctx.shadowColor = 'transparent'
+        ctx.lineWidth = 3
+        ctx.strokeStyle = '#3d2e1a'
+        ctx.stroke()
+        circle(ctx, 17.5)
+        ctx.lineWidth = 1
+        ctx.strokeStyle = 'rgba(139, 105, 20, 0.7)'
+        ctx.stroke()
+        numeral(ctx, n, 21, '#3d2e1a')
+      })
+    // Current stop: a wax seal
+    const sealTexture = (n: number) =>
+      makeMarkerTexture((ctx) => {
+        ctx.shadowColor = 'rgba(42, 26, 10, 0.5)'
+        ctx.shadowBlur = 4
+        ctx.shadowOffsetY = 1.5
+        ctx.beginPath()
+        for (let a = 0; a <= 64; a++) {
+          const theta = (a / 64) * Math.PI * 2
+          const r = 27 + Math.sin(theta * 9) * 1.1 + Math.sin(theta * 4 + 1) * 0.7
+          const x = mid + Math.cos(theta) * r
+          const y = mid + Math.sin(theta) * r
+          if (a === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.closePath()
+        const wax = ctx.createRadialGradient(mid - 7, mid - 8, 2, mid, mid, 28)
+        wax.addColorStop(0, '#c43a4c')
+        wax.addColorStop(0.55, '#9e1a2c')
+        wax.addColorStop(1, '#690d1b')
+        ctx.fillStyle = wax
+        ctx.fill()
+        ctx.shadowColor = 'transparent'
+        circle(ctx, 20)
+        ctx.lineWidth = 1.5
+        ctx.strokeStyle = 'rgba(250, 243, 224, 0.5)'
+        ctx.stroke()
+        numeral(ctx, n, 24, '#faf3e0')
+      })
+    // Not reached yet: a small hollow ring
+    const futureTexture = makeMarkerTexture((ctx) => {
+      circle(ctx, 9)
+      ctx.fillStyle = 'rgba(250, 243, 224, 0.9)'
+      ctx.fill()
+      ctx.lineWidth = 2.5
+      ctx.strokeStyle = 'rgba(61, 46, 26, 0.6)'
+      ctx.stroke()
+    })
+    // Ripple around the seal
+    const haloTexture = makeMarkerTexture((ctx) => {
+      circle(ctx, 29)
+      ctx.lineWidth = 2
+      ctx.strokeStyle = 'rgba(139, 105, 20, 0.9)'
+      ctx.stroke()
+    })
+    // Traveller: a compass needle pointing along the leg (drawn facing +x)
+    const needleTexture = makeMarkerTexture((ctx) => {
+      ctx.shadowColor = 'rgba(42, 26, 10, 0.45)'
+      ctx.shadowBlur = 3
+      ctx.shadowOffsetY = 1
+      ctx.beginPath()
+      ctx.moveTo(56, mid)
+      ctx.lineTo(mid - 4, mid - 9)
+      ctx.lineTo(12, mid)
+      ctx.closePath()
+      ctx.fillStyle = '#c4a040'
+      ctx.fill()
+      ctx.shadowColor = 'transparent'
+      ctx.beginPath()
+      ctx.moveTo(56, mid)
+      ctx.lineTo(mid - 4, mid + 9)
+      ctx.lineTo(12, mid)
+      ctx.closePath()
+      ctx.fillStyle = '#3d2e1a'
+      ctx.fill()
+      ctx.beginPath()
+      ctx.moveTo(56, mid)
+      ctx.lineTo(mid - 4, mid - 9)
+      ctx.lineTo(12, mid)
+      ctx.lineTo(mid - 4, mid + 9)
+      ctx.closePath()
+      ctx.lineWidth = 1.5
+      ctx.strokeStyle = '#3d2e1a'
+      ctx.stroke()
+      circle(ctx, 3.5)
+      ctx.fillStyle = '#faf3e0'
+      ctx.fill()
+      ctx.lineWidth = 1.2
+      ctx.stroke()
+    })
+
+    const markerMaterial = (map: Texture) =>
+      new SpriteMaterial({ map, transparent: true, depthTest: false, depthWrite: false })
+    const stopMarkers = journeyStops.map((s, i) => {
+      const visited = visitedTexture(s.episode)
+      const seal = sealTexture(s.episode)
+      const sprite = new Sprite(markerMaterial(futureTexture))
+      const [x, y] = stopWorld[i]
+      sprite.position.set(x, y, 0.04)
+      sprite.renderOrder = 4.7
+      routeGroup.add(sprite)
+      return { sprite, visited, seal }
+    })
+    const halo = new Sprite(markerMaterial(haloTexture))
+    halo.renderOrder = 4.75
+    routeGroup.add(halo)
+    const needle = new Sprite(markerMaterial(needleTexture))
+    needle.renderOrder = 4.9
+    routeGroup.add(needle)
+
+    paintMarkers()
+    // Repaint once Fraunces has loaded, so numerals don't stay in the fallback font
+    void document.fonts.ready.then(() => {
+      if (!texturesCancelled) paintMarkers()
+    })
+
+    scene.add(routeGroup)
+
+    function updateJourney(elapsed: number, worldPerPx: number) {
+      const step = journeyStepRef.current
+      routeGroup.visible = step !== null && stopWorld.length > 0
+      if (step === null || !routeGroup.visible) return
+      const current = Math.min(step, stopWorld.length - 1)
+
+      const anim = journeyAnimRef.current
+      let progress = 1
+      if (anim) {
+        progress = easeInOutCubic(clamp((elapsed - anim.startTime) / anim.duration, 0, 1))
+        if (progress >= 1) journeyAnimRef.current = null
+      }
+
+      for (let i = 1; i < legs.length; i++) {
+        const leg = legs[i]!
+        // The dotted leg to the next, unreleased stop shows once you reach its start
+        const visible = journeyStops[i].upcoming ? i - 1 <= current : i <= current
+        for (const line of leg.lines) line.visible = visible
+        leg.geom.instanceCount =
+          anim && i === anim.to
+            ? Math.ceil(progress * ROUTE_LEG_SUBDIVISIONS)
+            : ROUTE_LEG_SUBDIVISIONS
+      }
+      for (const { mat, dashPx, gapPx } of dashedRouteMaterials) {
+        mat.dashSize = dashPx * worldPerPx
+        mat.gapSize = gapPx * worldPerPx
+      }
+
+      stopMarkers.forEach(({ sprite, visited, seal }, i) => {
+        const isCurrent = i === current && !anim
+        const reached = i < current || isCurrent
+        const mat = sprite.material
+        mat.map = isCurrent ? seal : reached ? visited : futureTexture
+        const px = isCurrent ? 38 : 24
+        sprite.scale.set(px * worldPerPx, px * worldPerPx, 1)
+        sprite.renderOrder = isCurrent ? 4.8 : 4.7
+      })
+
+      const [cx, cy] = stopWorld[current]
+      halo.visible = !anim
+      const ripple = (elapsed * 0.7) % 1
+      const haloPx = 38 * (1 + ripple * 0.7)
+      halo.position.set(cx, cy, 0.04)
+      halo.scale.set(haloPx * worldPerPx, haloPx * worldPerPx, 1)
+      halo.material.opacity = 1 - ripple
+
+      // Needle travels the active leg, pointing the way
+      needle.visible = !!anim
+      if (anim) {
+        const [fx, fy] = stopWorld[anim.from]
+        const [tx, ty] = stopWorld[anim.to]
+        needle.position.set(fx + (tx - fx) * progress, fy + (ty - fy) * progress, 0.05)
+        needle.material.rotation = Math.atan2(ty - fy, tx - fx)
+        needle.scale.set(34 * worldPerPx, 34 * worldPerPx, 1)
+      }
+    }
 
     // --- Raycasting & Interaction ---
     const raycaster = new Raycaster()
@@ -997,6 +1379,7 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       waterMaterial.uniforms.u_resolution.value = res
       for (const mat of borderLineMaterials) mat.resolution.set(w, h)
       for (const mat of highlightLineMaterials) mat.resolution.set(w, h)
+      for (const mat of routeLineMaterials) mat.resolution.set(w, h)
     }
     window.addEventListener('resize', handleResize)
 
@@ -1017,6 +1400,10 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         centerRef.current[1] =
           ft.startCenterY + (ft.centerY - ft.startCenterY) * eased
         halfHRef.current = ft.startHalfH + (ft.halfH - ft.startHalfH) * eased
+        if (ft.peakHalfH) {
+          const bump = ft.peakHalfH - Math.max(ft.startHalfH, ft.halfH)
+          if (bump > 0) halfHRef.current += bump * Math.sin(Math.PI * eased)
+        }
         if (t >= 1) flyToRef.current = null
       }
 
@@ -1138,6 +1525,8 @@ export function useThreeScene(options: UseThreeSceneOptions) {
         mat.color.lerp(target, 0.15)
       })
 
+      updateJourney(clock.getElapsedTime(), frustumHeight / canvas.clientHeight)
+
       composer.render()
       animFrameId = requestAnimationFrame(render)
     }
@@ -1191,9 +1580,15 @@ export function useThreeScene(options: UseThreeSceneOptions) {
       terrainGeo.dispose()
       terrainMaterial.dispose()
       countyMaskTex.dispose()
+      routeGroup.traverse((child) => {
+        if (child instanceof LineSegments2) child.geometry.dispose()
+        if (child instanceof Sprite) child.material.dispose()
+      })
+      for (const mat of routeLineMaterials) mat.dispose()
+      for (const { tex } of markerCanvases) tex.dispose()
       waterMaterial.dispose()
     }
-  }, [canvasRef, geoData, islandsData, counties])
+  }, [canvasRef, geoData, islandsData, counties, journeyStops])
 
   return { zoomIn, zoomOut, resetView, flyTo }
 }

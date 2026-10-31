@@ -71,6 +71,23 @@ All county data lives in [`public/data/counties.json`](public/data/counties.json
 - Include at least one landmark per county
 - Coat of arms SVGs go in `public/assets/arms/`
 
+### Tom's Journey
+
+The route button (bottom right) steps through the series in filming order, using [`public/data/journey.json`](public/data/journey.json). Its stops were extracted from the route drawn on [tomscott.com/england](https://www.tomscott.com/england/) and georeferenced, so coordinates are approximate. When a new episode comes out, append a stop:
+
+```jsonc
+{
+  "episode": 33,
+  "historicCounty": "Wiltshire",  // the county as Tom names it
+  "countyId": "wiltshire",        // the ceremonial county in counties.json it is filed under
+  "title": "…",                    // video title, or null while upcoming
+  "place": "…",                    // filming location, or null if not named
+  "coords": { "lat": 51.16, "lng": -1.85 },
+  "travel": "car",                // "car" or "train": how Tom got there from the previous stop
+  "upcoming": true                // optional; drawn as a dotted final leg
+}
+```
+
 ## License
 
 This is a community fan project. Tom Scott's video content belongs to him and his production team.

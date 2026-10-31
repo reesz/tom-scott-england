@@ -10,7 +10,7 @@ import tailwindcss from '@tailwindcss/vite'
 // Runtime-fetched data files in /public/data. We hash their contents at build
 // time and expose the hashes to the app (via `define` below) so fetch URLs can
 // carry a `?v=<hash>` cache buster — see src/lib/dataUrl.ts.
-const DATA_FILES = ['counties.json', 'england-counties.geo.json', 'british-isles.geo.json']
+const DATA_FILES = ['counties.json', 'journey.json', 'england-counties.geo.json', 'british-isles.geo.json']
 
 function dataVersions(): Record<string, string> {
   return Object.fromEntries(

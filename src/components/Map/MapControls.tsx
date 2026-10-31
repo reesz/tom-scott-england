@@ -2,14 +2,31 @@ interface MapControlsProps {
   onZoomIn: () => void
   onZoomOut: () => void
   onReset: () => void
+  journeyActive: boolean
+  onToggleJourney: () => void
 }
 
-export function MapControls({ onZoomIn, onZoomOut, onReset }: MapControlsProps) {
+export function MapControls({ onZoomIn, onZoomOut, onReset, journeyActive, onToggleJourney }: MapControlsProps) {
   const buttonClass =
     'flex h-11 w-11 items-center justify-center rounded-[10px] border-[1.5px] border-[var(--line)] bg-[var(--surface)] shadow-[0_2px_8px_var(--shadow-soft)] backdrop-blur transition hover:bg-[var(--parchment-dark)] active:scale-95'
 
   return (
     <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+      <button
+        onClick={onToggleJourney}
+        className={`${buttonClass} mb-3 ${journeyActive ? '!border-[var(--wax-red)] !bg-[var(--red-action-bg)]' : ''}`}
+        aria-label={journeyActive ? "Stop following Tom's journey" : "Follow Tom's journey"}
+        aria-pressed={journeyActive}
+        title="Follow Tom's journey"
+      >
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          {/* Dotted route between two waypoints, ending at a pin */}
+          <path d="M4.5 17.5C8 17.5 6 11 10.5 11S13 6 15.5 6" stroke="var(--wax-red)" strokeWidth="1.6" strokeLinecap="round" strokeDasharray="0.1 3" />
+          <circle cx="4.5" cy="17.5" r="2" fill="var(--wax-red)" />
+          <path d="M16 1.8a3.4 3.4 0 0 1 3.4 3.4c0 2.5-3.4 5.8-3.4 5.8s-3.4-3.3-3.4-5.8A3.4 3.4 0 0 1 16 1.8Z" fill="var(--gold)" fillOpacity="0.25" stroke="var(--ink)" strokeWidth="1.1" />
+          <circle cx="16" cy="5.2" r="1.1" fill="var(--ink)" />
+        </svg>
+      </button>
       <button onClick={onZoomIn} className={buttonClass} aria-label="Zoom in">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--ink)" strokeWidth="2">
           <line x1="10" y1="4" x2="10" y2="16" />
